@@ -3,6 +3,19 @@ namespace po = boost::program_options;
 
 #include <iostream>
 #include <iterator>
+#include <istream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+
+#include "csv.h"
+
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+    return str.size() >= suffix.size() && 0 == 
+      str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
 
 int main(int argc, char* argv[]) {
   try {
@@ -35,12 +48,22 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    if (vm.count("angles")) {
-      std::cout << "Compression level was set to " << angles << std::endl;
-    } else {
-      std::cout << "Compression level was not set.\n";
+    const std::string ext(".angles");
+    if (!vm.count("angles")) {
+      throw std::invalid_argument("Angles missing");
+    } else if (!endsWith(angles, ext)) {
+      throw std::invalid_argument(
+          "The file for angles should have .angles extension\n");
     }
-    std::cout << "Q" << std::endl;
+
+    std::string name = angles.substr(0, angles.size() - ext.size());
+    std::cout << "The file has name " << name << std::endl;
+
+    std::ifstream inp(angles);
+    auto iarr = readCSV(inp);
+
+    std::cout << iarr.size() << std::endl;
+
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
