@@ -102,7 +102,7 @@ QT QuadraticForm::operator()(std::vector<QT> v) const {
     for (int j = 0; j < i; j++) {
       res += w2_[i][j] * v[i] * v[j];
     }
-    res += w2_[i][i] / 2;
+    res += w2_[i][i] / 2 * v[i] * v[i];
   }
 
   return res;

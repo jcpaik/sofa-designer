@@ -25,6 +25,7 @@ void SofaState::update_() {
     // sol.status == CGAL::QP_OPTIMAL
     area_ = sol.value;
     vars_ = sol.variables;
+    assert((ctx.area(e_))(vars_) == area_);
     // TODO: change constant
     if (area_ < QT(22195, 10000)) {
       is_valid_ = false;
