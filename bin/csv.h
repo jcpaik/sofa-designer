@@ -50,7 +50,7 @@ inline std::vector<std::string> readCSVRow(const std::string &row) {
   return fields;
 }
 
-/// Read CSV file, Excel dialect. Accept "quoted fields ""with quotes"""
+// Read CSV file, Excel dialect. Accept "quoted fields ""with quotes"""
 inline std::vector<std::vector<std::string>> readCSV(std::istream &in) {
   std::vector<std::vector<std::string>> table;
   std::string row;
@@ -65,4 +65,4 @@ inline std::vector<std::vector<std::string>> readCSV(std::istream &in) {
   return table;
 }
 
-#endif
+#endif // CSV_H

@@ -9,12 +9,86 @@ namespace po = boost::program_options;
 #include <vector>
 #include <stdexcept>
 
+#include "sofa/context.h"
+#include "sofa/geom.h"
+#include "sofa/branch_tree.h"
+#include "sofa/cereal.h"
 #include "csv.h"
 
-static bool endsWith(const std::string& str, const std::string& suffix)
-{
+void debug_states(std::vector<SofaState> valid_states) {
+  
+  std::cout << valid_states.size() << " states" << std::endl;
+  QT maxarea = 0;
+  auto maxs = &valid_states[0];
+  for (auto &s : valid_states) {
+    auto aa = s.area();
+    if (maxarea < aa) {
+      maxarea = aa;
+      maxs = &s;
+    }
+  }
+  std::cout << "area " << maxs->area() << std::endl;
+  for (auto ee : maxs->e())
+    std::cout << ee << " ";
+  std::cout << std::endl;
+  std::cout << "{";
+  for (auto val : maxs->vars())
+    std::cout << val << ", ";
+  std::cout << "}" << std::endl;
+  std::cout << "{" << std::endl;
+  for (int i = 0; i <= int(maxs->e().size()) - 2; i++) {
+    std::cout << '{' << maxs->v(i).x << ", " << maxs->v(i).y << "}, " << std::endl;
+  }
+  std::cout << "}" << std::endl;
+  for (auto &s : valid_states) {
+    for (auto ee : s.e())
+      std::cout << ee << " ";
+    std::cout << std::endl;
+  }
+}
+
+static bool endsWith(const std::string& str, const std::string& suffix) {
     return str.size() >= suffix.size() && 0 == 
       str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
+
+void process_angles(const std::vector<std::vector<std::string> > &csv, 
+                    const std::string &name) {
+  std::vector<Vector> gamma;
+  if (csv[0] != std::vector<std::string>({"index", "x", "y", "r"})) {
+    throw std::invalid_argument("CSV header");
+  }
+
+  std::vector<int> bidx;
+  for (size_t i = 1; i < csv.size(); i++) {
+    NT x(csv[i][1]), y(csv[i][2]), r(csv[i][3]);
+    gamma.emplace_back(QT(x, r), QT(y, r));
+
+    auto index = csv[i][0];
+    if (index.size()) {
+      int ii = stoi(index);
+      if (ii < 0) {
+        throw std::invalid_argument("Negative index");
+      }
+      if (bidx.size() <= ii) {
+        bidx.resize(ii + 1, -1);
+      }
+      bidx[ii] = i - 1;
+    }
+  }
+
+  for (auto g : gamma)
+    std::cout << g.x << " " << g.y << std::endl;
+
+  SofaContext ctx(gamma);
+  save((name + ".ctx").c_str(), ctx);
+
+  SofaBranchTree t(ctx, bidx[0]);
+  for (int i = 1; i < bidx.size(); i++) {
+    t.add_corner(bidx[i]);
+    debug_states(t.valid_states());
+  }
+  save((name + ".sofas").c_str(), t);
 }
 
 int main(int argc, char* argv[]) {
@@ -57,13 +131,9 @@ int main(int argc, char* argv[]) {
     }
 
     std::string name = angles.substr(0, angles.size() - ext.size());
-    std::cout << "The file has name " << name << std::endl;
-
     std::ifstream inp(angles);
-    auto iarr = readCSV(inp);
-
-    std::cout << iarr.size() << std::endl;
-
+    auto gamma_csv = readCSV(inp);
+    process_angles(gamma_csv, name);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
