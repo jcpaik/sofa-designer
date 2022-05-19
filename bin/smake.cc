@@ -15,38 +15,6 @@ namespace po = boost::program_options;
 #include "sofa/cereal.h"
 #include "csv.h"
 
-void debug_states(std::vector<SofaState> valid_states) {
-  
-  std::cout << valid_states.size() << " states" << std::endl;
-  QT maxarea = 0;
-  auto maxs = &valid_states[0];
-  for (auto &s : valid_states) {
-    auto aa = s.area();
-    if (maxarea < aa) {
-      maxarea = aa;
-      maxs = &s;
-    }
-  }
-  std::cout << "area " << maxs->area() << std::endl;
-  for (auto ee : maxs->e())
-    std::cout << ee << " ";
-  std::cout << std::endl;
-  std::cout << "{";
-  for (auto val : maxs->vars())
-    std::cout << val << ", ";
-  std::cout << "}" << std::endl;
-  std::cout << "{" << std::endl;
-  for (int i = 0; i <= int(maxs->e().size()) - 2; i++) {
-    std::cout << '{' << maxs->v(i).x << ", " << maxs->v(i).y << "}, " << std::endl;
-  }
-  std::cout << "}" << std::endl;
-  for (auto &s : valid_states) {
-    for (auto ee : s.e())
-      std::cout << ee << " ";
-    std::cout << std::endl;
-  }
-}
-
 static bool endsWith(const std::string& str, const std::string& suffix) {
     return str.size() >= suffix.size() && 0 == 
       str.compare(str.size()-suffix.size(), suffix.size(), suffix);
@@ -55,7 +23,7 @@ static bool endsWith(const std::string& str, const std::string& suffix) {
 void process_angles(const std::vector<std::vector<std::string> > &csv, 
                     const std::string &name) {
   std::vector<Vector> gamma;
-  if (csv[0] != std::vector<std::string>({"index", "x", "y", "r"})) {
+  if (csv[0] != std::vector<std::string>({"branching order", "x", "y", "r"})) {
     throw std::invalid_argument("CSV header");
   }
 
@@ -77,6 +45,7 @@ void process_angles(const std::vector<std::vector<std::string> > &csv,
     }
   }
 
+  // TODO: make this prettier
   for (auto g : gamma)
     std::cout << g.x << " " << g.y << std::endl;
 
@@ -86,7 +55,6 @@ void process_angles(const std::vector<std::vector<std::string> > &csv,
   SofaBranchTree t(ctx, bidx[0]);
   for (int i = 1; i < bidx.size(); i++) {
     t.add_corner(bidx[i]);
-    debug_states(t.valid_states());
   }
   save((name + ".sofas").c_str(), t);
 }
