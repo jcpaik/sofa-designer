@@ -41,7 +41,7 @@ void process_angles(const std::vector<std::vector<std::string> > &csv,
       if (bidx.size() <= ii) {
         bidx.resize(ii + 1, -1);
       }
-      bidx[ii] = i - 1;
+      bidx[ii] = i;
     }
   }
 
