@@ -45,6 +45,7 @@ std::vector<SofaState> process(
 }
 
 void SofaBranchTree::add_corner(int i, bool extend_in, bool extend_out, int nthread) {
+  assert(1 <= i && i < n);
   std::vector<SofaState> cur_states[nthread];
   for (int idx = 0; idx < int(valid_states_.size()); idx++)
     cur_states[idx % nthread].push_back(valid_states_[idx]);
