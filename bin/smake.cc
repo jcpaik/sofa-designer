@@ -21,7 +21,7 @@ static bool endsWith(const std::string& str, const std::string& suffix) {
 }
 
 void process_angles(const std::vector<std::vector<std::string> > &csv, 
-                    const std::string &name) {
+                    const std::string &name, unsigned int nthreads) {
   std::vector<Vector> gamma;
   if (csv[0] != std::vector<std::string>({"branching order", "x", "y", "r"})) {
     throw std::invalid_argument("CSV header");
@@ -54,7 +54,7 @@ void process_angles(const std::vector<std::vector<std::string> > &csv,
 
   SofaBranchTree t(ctx, bidx[0]);
   for (int i = 1; i < bidx.size(); i++) {
-    t.add_corner(bidx[i]);
+    t.add_corner(bidx[i], true, true, nthreads);
   }
   save((name + ".sofas").c_str(), t);
 }
@@ -62,7 +62,7 @@ void process_angles(const std::vector<std::vector<std::string> > &csv,
 int main(int argc, char* argv[]) {
   try {
     std::string angles;
-    unsigned int nthreads;
+    unsigned int nthreads = 1;
 
     // Set up syntax for arguments
     po::options_description desc("Allowed options");
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     std::string name = angles.substr(0, angles.size() - ext.size());
     std::ifstream inp(angles);
     auto gamma_csv = readCSV(inp);
-    process_angles(gamma_csv, name);
+    process_angles(gamma_csv, name, nthreads);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
