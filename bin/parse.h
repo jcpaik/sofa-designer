@@ -38,25 +38,27 @@ class Parser {
     LinearForm parse_ineq(const std::string &str);
 
   private:
-    const char *str_;
+    const char *c_;
     
-    int id();
-    QT num();
+    int id_();
+    QT num_();
 
-    LinearForm length();
-    LinearForm length_sum();
-    LinearForm opt_signed_length();
-    LinearForm signed_length();
+    LinearForm length_();
+    LinearForm length_sum_();
+    LinearForm opt_signed_length_();
+    LinearForm signed_length_();
     
-    LinearFormPoint point();
-    LinearFormPoint point_sum();
-    LinearFormPoint opt_signed_point();
-    LinearFormPoint signed_point();
+    LinearFormPoint point_();
+    LinearFormPoint point_sum_();
+    LinearFormPoint opt_signed_point_();
+    LinearFormPoint signed_point_();
 
-    Vector vector();
-    Vector vector_sum();
-    Vector opt_signed_vector();
-    Vector signed_vector();
+    Vector vector_();
+    Vector vector_sum_();
+    Vector opt_signed_vector_();
+    Vector signed_vector_();
+
+    LinearInequality ineq_();
 };
 
 #endif // PARSE_H
