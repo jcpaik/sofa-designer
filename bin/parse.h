@@ -28,17 +28,17 @@
 
 class Parser {
   public:
-    const &SofaContext ctx;
+    const SofaContext &ctx;
 
     Parser() = delete;
     Parser(const SofaContext &ctx);
     Parser(const SofaContext &&) = delete;
 
     LinearForm parse_expr(const std::string &str);
-    LinearForm parse_ineq(const std::string &str);
+    LinearInequality parse_ineq(const std::string &str);
 
   private:
-    const char *c_;
+    const char *p_;
     
     int id_();
     QT num_();

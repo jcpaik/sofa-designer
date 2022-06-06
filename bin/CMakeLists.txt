@@ -1,4 +1,9 @@
 find_package(Boost REQUIRED COMPONENTS program_options)
 include_directories(${Boost_INCLUDE_DIRS})
+<<<<<<< HEAD
 add_executable(sbranch sbranch.cc)
 target_link_libraries(sbranch sofa jsoncpp Boost::program_options)
+=======
+add_executable(sprove sprove.cc parse.cc)
+target_link_libraries(sprove sofa Boost::program_options)
+>>>>>>> 9c3424d (Now sprove compilable)
