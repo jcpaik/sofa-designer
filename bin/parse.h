@@ -13,8 +13,8 @@
 // <num> :== <id> | <id>/<id>
 //
 // <length> :== dot(<point_sum>,<vector_sum>) 
-//   | <opt_signed_point>.x
-//   | <opt_signed_point>.y
+//   | <point>.x
+//   | <point>.y
 //
 // <point> :== A(<id>) | C(<id>) | x(<id>) | p(<id>,<id>)
 //
@@ -39,25 +39,27 @@ class Parser {
 
   private:
     const char *p_;
+
+    void expect_(const char * const str);
     
     int id_();
     QT num_();
 
-    LinearForm length_();
-    LinearForm length_sum_();
-    LinearForm opt_signed_length_();
-    LinearForm signed_length_();
-    
     LinearFormPoint point_();
-    LinearFormPoint point_sum_();
-    LinearFormPoint opt_signed_point_();
     LinearFormPoint signed_point_();
+    LinearFormPoint opt_signed_point_();
+    LinearFormPoint point_sum_();
 
     Vector vector_();
-    Vector vector_sum_();
-    Vector opt_signed_vector_();
     Vector signed_vector_();
+    Vector opt_signed_vector_();
+    Vector vector_sum_();
 
+    LinearForm length_();
+    LinearForm signed_length_();
+    LinearForm opt_signed_length_();
+    LinearForm length_sum_();
+    
     LinearInequality ineq_();
 };
 
