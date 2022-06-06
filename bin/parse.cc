@@ -214,3 +214,18 @@ LinearForm Parser::length_sum_() {
     len += signed_length_();
   return len;
 }
+
+/*
+LinearInequality Parser::ineq_() {
+  LinearForm lhs = length_sum_();
+  if (*p_ == '>') {
+    expect_(">=");
+    QT num = num_();
+  } else if (*p_ == '<') {
+    expect_("<=");
+    QT num = num_();
+  } else {
+    throw std::runtime_error("Inequality expected");
+  }
+}
+*/
