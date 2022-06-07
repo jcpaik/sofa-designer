@@ -45,9 +45,3 @@ class SofaBranchTree {
     std::vector<int> indices_;
     std::vector<SofaState> valid_states_;
 };
-
-// ---------------- inlines -------------------------
-
-inline const std::vector<SofaState> &SofaBranchTree::valid_states() const {
-  return valid_states_;
-}

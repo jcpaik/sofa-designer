@@ -32,6 +32,50 @@ QuadraticForm::QuadraticForm(
   }
 }
 
+int QuadraticForm::d() const {
+  return d_;
+}
+
+QT &QuadraticForm::w0() {
+  return w0_;
+}
+
+const QT &QuadraticForm::w0() const {
+  return w0_;
+}
+
+std::vector<QT> &QuadraticForm::w1() {
+  return w1_;
+}
+
+const std::vector<QT> &QuadraticForm::w1() const {
+  return w1_;
+}
+
+QT &QuadraticForm::w1(int i) {
+  return w1_[i];
+}
+
+const QT &QuadraticForm::w1(int i) const {
+  return w1_[i];
+}
+
+std::vector< std::vector<QT> > &QuadraticForm::w2() {
+  return w2_;
+}
+
+const std::vector< std::vector<QT> > &QuadraticForm::w2() const {
+  return w2_;
+}
+
+QT &QuadraticForm::w2(int i, int j) {
+  return i >= j ? w2_[i][j] : w2_[j][i];
+}
+
+const QT &QuadraticForm::w2(int i, int j) const {
+  return i >= j ? w2_[i][j] : w2_[j][i];
+}
+
 QuadraticForm &QuadraticForm::operator+=(const QuadraticForm &other) {
   assert(d_ == other.d_);
 
@@ -81,6 +125,44 @@ QuadraticForm &QuadraticForm::operator/=(const QT &c) {
   return *this;
 }
 
+QuadraticForm QuadraticForm::operator+(
+    const QuadraticForm &other) const {
+  QuadraticForm res(*this);
+  res += other;
+  return res;
+}
+
+QuadraticForm QuadraticForm::operator-(
+    const QuadraticForm &other) const {
+  QuadraticForm res(*this);
+  res -= other;
+  return res;
+}
+
+QuadraticForm QuadraticForm::operator*(const QT &c) const {
+  QuadraticForm res(*this);
+  res *= c;
+  return res;
+}
+
+QuadraticForm QuadraticForm::operator/(const QT &c) const {
+  QuadraticForm res(*this);
+  res /= c;
+  return res;
+}
+
+QuadraticForm QuadraticForm::operator-() const {
+  return (*this) * -1;
+}
+
+bool QuadraticForm::operator==(const QuadraticForm &other) const {
+  return w0_ == other.w0_ && w1_ == other.w1_ && w2_ == other.w2_;
+}
+
+bool QuadraticForm::operator!=(const QuadraticForm &other) const {
+  return w0_ != other.w0_ || w1_ != other.w1_ || w2_ != other.w2_;
+}
+
 QuadraticForm &QuadraticForm::normalize() {
   w0_.normalize();
   for (auto &v : w1_)
@@ -106,4 +188,8 @@ QT QuadraticForm::operator()(std::vector<QT> v) const {
   }
 
   return res;
+}
+
+QuadraticForm operator*(const QT &c, const QuadraticForm &f) {
+  return f * c;
 }

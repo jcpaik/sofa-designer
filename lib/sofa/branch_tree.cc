@@ -23,6 +23,10 @@ SofaBranchTree::SofaBranchTree(const SofaContext &ctx, const char *file)
   load(file, *this);
 }
 
+const std::vector<SofaState> &SofaBranchTree::valid_states() const {
+  return valid_states_;
+}
+
 std::vector<SofaState> process(
     std::vector<SofaState> states, int i, bool extend_in, bool extend_out, bool show_tqdm) {
   std::vector<SofaState> results;
