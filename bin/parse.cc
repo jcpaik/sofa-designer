@@ -11,12 +11,10 @@ LinearForm Parser::parse_expr(const std::string &str) {
   return length_sum_();
 }
 
-/*
 LinearInequality Parser::parse_ineq(const std::string &str) {
   p_ = str.c_str();
   return ineq_();
 }
-*/
 
 void Parser::expect_(const char * const str) {
   size_t n = strlen(str);
@@ -215,17 +213,17 @@ LinearForm Parser::length_sum_() {
   return len;
 }
 
-/*
 LinearInequality Parser::ineq_() {
   LinearForm lhs = length_sum_();
   if (*p_ == '>') {
     expect_(">=");
     QT num = num_();
+    return lhs >= num;
   } else if (*p_ == '<') {
     expect_("<=");
     QT num = num_();
+    return lhs <= num;
   } else {
     throw std::runtime_error("Inequality expected");
   }
 }
-*/
