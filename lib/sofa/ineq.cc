@@ -103,3 +103,15 @@ LinearInequality operator>=(
   LinearForm d = lhs - rhs;
   return LinearInequality(d.w1(), -d.w0(), CGAL::LARGER);
 } 
+
+LinearInequality operator<=(
+    const LinearForm &lhs, 
+    const QT &rhs) {
+  return lhs <= LinearForm::constant(lhs.d(), rhs);
+}
+
+LinearInequality operator>=(
+    const LinearForm &lhs,
+    const QT &rhs) {
+  return lhs >= LinearForm::constant(lhs.d(), rhs);
+} 

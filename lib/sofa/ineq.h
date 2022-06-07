@@ -46,3 +46,5 @@ class LinearInequality {
 // Concise way of writing inequalities from linear forms
 LinearInequality operator<=(const LinearForm &lhs, const LinearForm &rhs);
 LinearInequality operator>=(const LinearForm &lhs, const LinearForm &rhs);
+LinearInequality operator<=(const LinearForm &lhs, const QT &rhs);
+LinearInequality operator>=(const LinearForm &lhs, const QT &rhs);
