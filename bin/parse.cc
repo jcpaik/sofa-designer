@@ -38,7 +38,7 @@ int Parser::id_() {
   }
 
   if ('1' > *p_ || *p_ > '9') {
-    throw std::range_error("Leading zero not found");
+    throw std::range_error("Leading nonzero digit not found");
   }
 
   int id = int(*p_) - int('0');
@@ -126,11 +126,13 @@ LinearFormPoint Parser::point_sum_() {
 
 Vector Parser::vector_() {
   if (*p_ == 'u') {
+    p_++;
     expect_("(");
     int id = id_();
     expect_(")");
     return ctx.u(id);
   } else if (*p_ == 'v') {
+    p_++;
     expect_("(");
     int id = id_();
     expect_(")");

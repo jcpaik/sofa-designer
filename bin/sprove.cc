@@ -24,6 +24,12 @@ int main(int argc, char* argv[]) {
       });
 
   Parser p(ctx);
+  auto res = p.parse_expr("dot(A(0)-A(5),u(0))");
+  assert (res == dot(ctx.u(0), ctx.A(0) - ctx.A(ctx.n())));
+  for (int i = 1; i < ctx.n(); i++) {
+    auto res = p.parse_expr(std::string("dot(A(0)-p(0,-")+std::to_string(i)+"),u(0))");
+    assert (res == dot(ctx.u(1), ctx.A(0) - ctx.p(0, i)));
+  }
 
   return 0;
 }
