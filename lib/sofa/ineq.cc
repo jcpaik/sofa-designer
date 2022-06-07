@@ -34,6 +34,49 @@ LinearInequality::LinearInequality(const std::vector<QT> &a, const QT &b,
   b_ = b.numerator() * (d / b.denominator());
 }
 
+int LinearInequality::d() const {
+  return d_;
+}
+
+std::vector<NT> &LinearInequality::a() {
+  return a_;
+}
+
+const std::vector<NT> &LinearInequality::a() const {
+  return a_;
+}
+
+NT &LinearInequality::a(int i) {
+  return a_[i];
+}
+
+const NT &LinearInequality::a(int i) const {
+  return a_[i];
+}
+
+NT &LinearInequality::b() {
+  return b_;
+}
+
+const NT &LinearInequality::b() const {
+  return b_;
+}
+
+CGAL::Comparison_result &LinearInequality::r() {
+  return r_;
+}
+
+const CGAL::Comparison_result &LinearInequality::r() const {
+  return r_;
+}
+
+LinearInequality LinearInequality::negate() const {
+  if (r_ == CGAL::SMALLER)
+    return LinearInequality(a_, b_, CGAL::LARGER);
+  else
+    return LinearInequality(a_, b_, CGAL::SMALLER);
+}
+
 bool LinearInequality::operator()(const std::vector<QT> &v) const {
   assert(int(v.size()) == d_);
 
@@ -46,3 +89,17 @@ bool LinearInequality::operator()(const std::vector<QT> &v) const {
   else
     return asum >= b_;
 }
+
+LinearInequality operator<=(
+    const LinearForm &lhs, 
+    const LinearForm &rhs) {
+  LinearForm d = lhs - rhs;
+  return LinearInequality(d.w1(), -d.w0(), CGAL::SMALLER);
+}
+
+LinearInequality operator>=(
+    const LinearForm &lhs,
+    const LinearForm &rhs) {
+  LinearForm d = lhs - rhs;
+  return LinearInequality(d.w1(), -d.w0(), CGAL::LARGER);
+} 
