@@ -47,49 +47,44 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   int vidx = 0;
   s_.resize(2 * n_ + 1);
 
-  // Set right part of convex hull
-  LinearForm aysum = zero;
+  // Set support values of cap
+  s_[0] = zero;
   for (int i = 1; i <= n_ - 1; i++) {
     s_[i] = LinearForm::variable(d_, vidx++);
-    aysum += s_[i] * v(i).y;
   }
-  s_[0] = one - aysum;
-  // Add corresponding constraint
-  default_constraints_.push_back(int(ineqs_.size()));
-  ineqs_.push_back(s_[0] >= zero);
-
-  s_[n_] = LinearForm::variable(d_, vidx++);
-
-  // Set left part of convex hull
-  LinearForm cysum = LinearForm(d_);
-  for (int i = 1; i <= n_ - 1; i++) {
-    s_[n_ + i] = LinearForm::variable(d_, vidx++);
-    cysum += s_[n_ + i] * u(i).y;
+  s_[n_] = one;
+  for (int i = n_ + 1; i <= 2 * n_; i++) {
+    s_[i] = LinearForm::variable(d_, vidx++);
   }
-  s_[2 * n_] = one - cysum;
-  // Add corresponding constraint
-  default_constraints_.push_back(int(ineqs_.size()));
-  ineqs_.push_back(s_[2 * n_] >= zero);
 
   // Check the number of primitive variables introduced
   assert(vidx == d_);
 
-  // Precompute area
+  // Set lines
+  a_.resize(2 * n_ + 1);
+  b_.resize(2 * n_ + 1);
+  for (int i = 0; i <= 2 * n_; i++) {
+    a_[i] = b_[i] = Line(u(i), s_[i]);
+    b_[i].b -= one;
+  }
+
+  // Compute intersections
   A_.resize(2 * n_ + 2);
   A_[0] = LinearFormPoint(d_);
-  for (int i = 0; i <= 2 * n_; i++)
-    A_[i + 1] = A_[i] + s_[i] * v(i);
+  for (int i = 1; i <= 2 * n_; i++)
+    A_[i] = intersection(a_[i - 1], a_[i]);
+  A_[2 * n_ + 1] = LinearFormPoint(-s_[2 * n_], zero);
 
   assert(A_[n_].y == one);
   assert(A_[n_ + 1].y == one);
   assert(A_[2 * n_ + 1].y == zero);
+  assert(A_[1].x == A_[0].x);
+  assert(A_[2 * n_].x == A_[2 * n_ + 1].x);
 
-  // Compute lines
-  a_.resize(2 * n_ + 1);
-  b_.resize(2 * n_ + 1);
+  // Add convexity constraints
   for (int i = 0; i <= 2 * n_; i++) {
-    a_[i] = b_[i] = Line(u(i), A_[i]);
-    b_[i].b -= one;
+    default_constraints_.push_back(int(ineqs_.size()));
+    ineqs_.push_back(dot(A_[i + 1] - A_[i], v(i)) >= zero);
   }
 
   // Compute outer area
