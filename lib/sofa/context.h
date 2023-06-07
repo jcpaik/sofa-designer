@@ -35,7 +35,7 @@ class SofaContext {
     // The number of variables d = 2n-1 involved
     // Two out of 2n+1 sides are eliminated
     int d() const;
-    // Convex hull edge length (0 <= i <= 2*n)
+    // Convex hull support function (0 <= i <= 2*n)
     const LinearForm &s(int i) const;
     // Vertices (right) (0 <= i <= 2*n+1)
     const LinearFormPoint &A(int i) const;
