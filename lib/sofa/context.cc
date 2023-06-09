@@ -19,7 +19,8 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   // Inequalities start from index 1
   assert(int(ineqs_.size()) == 0);
   // The 'null' 0'th inequality
-  ineqs_.resize(1); 
+  ineqs_.resize(1);
+  ineq_names_.resize(1);
 
   n_ = int(u_in.size()) + 1;
   d_ = 2 * n_ - 1;
@@ -305,6 +306,17 @@ QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
     area -= inner_area_[index_(pl[i - 1], pl[i], pl[i + 1])];
   }
   return area;
+}
+
+Json::Value SofaContext::split_values() const {
+  Json::Value val;
+  for (int i = 1; i < extra_ineqs_offset_; i++) {
+    if (ineq_names_[i] == "invalid")
+      continue;
+    
+    val[ineq_names_[i]] = i;
+  }
+  return val;
 }
 
 int SofaContext::index_(int i, int j) const {

@@ -130,7 +130,7 @@ class SofaContext {
     friend CerealWriter &operator<<(CerealWriter &out, const SofaContext &v);
     friend CerealReader &operator>>(CerealReader &in, SofaContext &v);
 
-    Json::Value split_values();
+    Json::Value split_values() const;
 
   private:
     int n_, d_;
