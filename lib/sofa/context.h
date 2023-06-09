@@ -2,8 +2,11 @@
 
 #include <cassert>
 #include <algorithm>
-#include <vector>
+#include <string>
 #include <tuple>
+#include <vector>
+
+#include <json/json.h>
 
 #include "number.h"
 #include "forms.h"
@@ -57,7 +60,7 @@ class SofaContext {
     // -n <= i <= n
     const LinearFormPoint x(int i) const;
     // Default constraints for sofa normality
-    const SofaConstraints &default_constraints() const;
+    SofaConstraints default_constraints() const;
 
     SofaConstraintProbe is_left(int i, int j, int l) const;
     SofaConstraintProbe is_right(int i, int j, int l) const;
@@ -127,6 +130,8 @@ class SofaContext {
     friend CerealWriter &operator<<(CerealWriter &out, const SofaContext &v);
     friend CerealReader &operator>>(CerealReader &in, SofaContext &v);
 
+    Json::Value split_values() const;
+
   private:
     int n_, d_;
     std::vector<Vector> u_;
@@ -140,12 +145,18 @@ class SofaContext {
     std::vector<QuadraticForm> inner_area_;
 
     std::vector<SofaConstraintProbe> default_constraints_;
+    // !i9, !i8, !i7, ..., !i1, 0, i1, i2, ..., i9
     std::vector<LinearInequality> ineqs_;
+    // points to ineq zero
     std::vector<LinearInequality>::const_iterator ineqs_zero_;
-    int default_ineqs_offset_;
-    int left_ineqs_offset_;
-    int over_ineqs_offset_;
-    int extra_ineqs_offset_;
+    std::vector<std::string> ineq_names_;
+    // Inequalities appear in this order in ineqs_
+    SofaConstraintProbe default_ineqs_offset_;
+    SofaConstraintProbe left_ineqs_offset_;
+    SofaConstraintProbe over_ineqs_offset_;
+    SofaConstraintProbe extra_ineqs_offset_;
+
+    void add_ineq_(const LinearInequality &ineq, const std::string &name);
 
     int index_(int i, int j) const;
     int index_(int i, int j, int k) const;

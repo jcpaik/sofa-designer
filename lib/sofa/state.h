@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <json/json.h>
+
 #include "number.h"
 #include "forms.h"
 #include "ineq.h"
@@ -58,6 +60,8 @@ class SofaState {
     // Does not store/load context information
     friend CerealWriter &operator<<(CerealWriter &out, const SofaState &v);
     friend CerealReader &operator>>(CerealReader &in, SofaState &v);
+
+    Json::Value json();
     
   private:
     bool is_valid_;

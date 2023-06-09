@@ -5,58 +5,74 @@ namespace po = boost::program_options;
 #include <iterator>
 #include <istream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
+#include <utility>
 
 #include "sofa/context.h"
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
 #include "sofa/cereal.h"
-#include "csv.h"
 
 static bool endsWith(const std::string& str, const std::string& suffix) {
     return str.size() >= suffix.size() && 0 == 
       str.compare(str.size()-suffix.size(), suffix.size(), suffix);
 }
 
-void process_angles(const std::vector<std::vector<std::string> > &csv, 
-                    const std::string &name, unsigned int nthreads) {
+QT rational(const std::string &s) {
+  std::stringstream sin(s);
+  QT res;
+  sin >> res;
+  if (!sin.eof())
+    throw std::invalid_argument(
+      std::string("Invalid rational number: ") + s);
+  return res;
+}
+
+void process_angles(Json::Value &angles, unsigned int nthreads) {
+  if (angles.type() != Json::arrayValue)
+    throw std::invalid_argument("JSON not an array");
+  
   std::vector<Vector> gamma;
-  if (csv[0] != std::vector<std::string>({"branching order", "x", "y", "r"})) {
-    throw std::invalid_argument("CSV header");
+  std::vector< std::pair<int, int> > order_pair;
+
+  for (int i = 0; i < angles.size(); i++) {
+    const auto &angle = angles[i];
+    gamma.emplace_back(
+      rational(angle["cos"].asString()),
+      rational(angle["sin"].asString()));
+
+    int order = angle["branch_order"].asInt();
+    if (order < 0)
+      continue;
+    order_pair.emplace_back(order, i + 1);
   }
 
-  std::vector<int> bidx;
-  for (size_t i = 1; i < csv.size(); i++) {
-    NT x(csv[i][1]), y(csv[i][2]), r(csv[i][3]);
-    gamma.emplace_back(QT(x, r), QT(y, r));
+  // Determine the corner indices in branching order
+  std::sort(order_pair.begin(), order_pair.end());
+  std::vector<int> bidx(order_pair.size());
+  for (size_t i = 0; i < order_pair.size(); i++)
+    bidx[i] = order_pair[i].second;
 
-    auto index = csv[i][0];
-    if (index.size()) {
-      int ii = stoi(index);
-      if (ii < 0) {
-        throw std::invalid_argument("Negative index");
-      }
-      if (bidx.size() <= ii) {
-        bidx.resize(ii + 1, -1);
-      }
-      bidx[ii] = i;
-    }
-  }
-
-  // TODO: make this prettier
-  for (auto g : gamma)
-    std::cout << g.x << " " << g.y << std::endl;
-
+  // Branching
   SofaContext ctx(gamma);
-  save((name + ".ctx").c_str(), ctx);
-
   SofaBranchTree t(ctx, bidx[0]);
   for (int i = 1; i < bidx.size(); i++) {
     t.add_corner(bidx[i], true, true, nthreads);
   }
-  save((name + ".sofas").c_str(), t);
+
+  // Print relevant information
+  QT marea(0);
+  auto x(t.valid_states());
+  for (auto &s : x) {
+    auto a = s.area();
+    marea = std::max(marea, a);
+  }
+  std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
+  std::cout << "Area: " << marea << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -90,18 +106,18 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    const std::string ext(".angles");
+    const std::string ext(".json");
     if (!vm.count("angles")) {
       throw std::invalid_argument("Angles missing");
     } else if (!endsWith(angles, ext)) {
       throw std::invalid_argument(
-          "The file for angles should have .angles extension\n");
+          "The file for angles should have .json extension\n");
     }
 
-    std::string name = angles.substr(0, angles.size() - ext.size());
     std::ifstream inp(angles);
-    auto gamma_csv = readCSV(inp);
-    process_angles(gamma_csv, name, nthreads);
+    Json::Value angles_json;
+    inp >> angles_json;
+    process_angles(angles_json, nthreads);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;

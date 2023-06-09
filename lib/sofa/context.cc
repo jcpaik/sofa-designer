@@ -10,7 +10,17 @@ SofaContext::SofaContext(const char *file) {
   load(file, *this);
 }
 
+void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &name) {
+    ineqs_.push_back(ineq);
+    ineq_names_.push_back(name);
+}
+
 void SofaContext::initialize(const std::vector<Vector> &u_in) {
+  // Inequalities start from index 1
+  assert(int(ineqs_.size()) == 0);
+  // The 'null' 0'th inequality
+  ineqs_.resize(1);
+  ineq_names_.resize(1);
 
   n_ = int(u_in.size()) + 1;
   d_ = 2 * n_ - 1;
@@ -35,13 +45,6 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   // Linear form constants;
   LinearForm zero(d_);
   LinearForm one = LinearForm::constant(d_, 1);
-
-  // Inequalities start from index 1
-  assert(int(ineqs_.size()) == 0);
-  ineqs_.resize(1); // The 'null' 0'th inequality
-
-  // Prepare to add default_ineqs_ to ineqs_
-  default_ineqs_offset_ = int(ineqs_.size());
 
   // Initialize edge length variables
   int vidx = 0;
@@ -81,11 +84,13 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   assert(A_[1].x == A_[0].x);
   assert(A_[2 * n_].x == A_[2 * n_ + 1].x);
 
+  // Prepare to add default_ineqs_ to ineqs_
+  default_ineqs_offset_ = int(ineqs_.size());
   // Add convexity constraints
-  for (int i = 0; i <= 2 * n_; i++) {
-    default_constraints_.push_back(int(ineqs_.size()));
-    ineqs_.push_back(dot(A_[i + 1] - A_[i], v(i)) >= zero);
-  }
+  for (int i = 0; i <= 2 * n_; i++)
+    add_ineq_(
+      dot(A_[i + 1] - A_[i], v(i)) >= zero, 
+      std::string("s ") + std::to_string(i));
 
   // Compute outer area
   outer_area_ = polygon_area(A_);
@@ -120,9 +125,11 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
       for (int i = -(n_ - 1); i < j; i++) {
         if (i != l - n_ && i != l && j != l - n_ && j != l) {
           assert(is_left(i, j, l) == int(ineqs_.size()));
-          ineqs_.push_back(p(i, j).x <= p(l - n_, l).x);
+          add_ineq_(
+            p(l - n_, l).x - p(i, j).x >= 0,
+            std::string("l ") + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(l));
         } else {
-          ineqs_.emplace_back();
+          add_ineq_(LinearInequality(), "invalid");
         }
       }
 
@@ -135,7 +142,8 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
         assert(is_over(i, j, k) == int(ineqs_.size()));
         const auto &ptr = p(i, j);
         const auto d = dot(line(k).a, ptr);
-        ineqs_.push_back(d >= line(k).b);
+        add_ineq_(d - line(k).b >= 0,
+          std::string("o ") + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(k));
       }
 
   extra_ineqs_offset_ = int(ineqs_.size());
@@ -203,9 +211,13 @@ const LinearFormPoint SofaContext::x(int i) const {
     return p(i - n_, i);
 }
 
-const SofaConstraints 
-&SofaContext::default_constraints() const {
-  return default_constraints_;
+SofaConstraints SofaContext::default_constraints() const {
+  SofaConstraints c;
+  for (auto i = default_ineqs_offset_;
+    i < left_ineqs_offset_;
+    i++)
+    c.push_back(i);
+  return c;
 }
 
 SofaConstraintProbe SofaContext::is_left(int i, int j, int l) const {
@@ -255,6 +267,7 @@ const LinearInequality &SofaContext::ineq(SofaConstraintProbe i) const {
   return ineqs_zero_[i];
 }
 
+// TODO: remove extra_ineqs_offset_
 int SofaContext::extra_ineqs_offset() const {
   return extra_ineqs_offset_;
 }
@@ -293,6 +306,17 @@ QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
     area -= inner_area_[index_(pl[i - 1], pl[i], pl[i + 1])];
   }
   return area;
+}
+
+Json::Value SofaContext::split_values() const {
+  Json::Value val;
+  for (int i = 1; i < extra_ineqs_offset_; i++) {
+    if (ineq_names_[i] == "invalid")
+      continue;
+    
+    val[ineq_names_[i]] = i;
+  }
+  return val;
 }
 
 int SofaContext::index_(int i, int j) const {
