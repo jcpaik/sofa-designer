@@ -45,7 +45,7 @@ void add_corner(SofaState &s, int i, Sink &sink, bool extend) {
     for (int j = 0; j <= m; j++) {
       if (!s.is_valid())
         break;
-      auto cur = j < m ? s.split(s.ctx.is_left(s.e(j), s.e(j + 1), j)) : s;
+      auto cur = j < m ? s.split(s.ctx.is_left(s.e(j), s.e(j + 1), i)) : s;
       if (!cur.is_valid())
         continue;
       // handle case when p(i, i - n) is under the trapezoids
