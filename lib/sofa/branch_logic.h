@@ -15,13 +15,13 @@ typedef std::vector<SofaState> Sink;
 // function call = case division
 // push to sink = termination
 void add_corner(
-    SofaState &s, int i, Sink &sink, bool extend_in, bool extend_out);
+    SofaState &s, int i, Sink &sink, bool extend);
 // case where point p_i = p(i, i - n) is inside triangular region
 void add_corner_inside(
-    SofaState &s, int i, Sink &sink, bool extend);
+    SofaState &s, int i, int j, Sink &sink, bool extend);
 // case where point p_i = p(i, i - n) is outside triangular region
 void add_corner_outside(
-    SofaState &s, int i, Sink &sink, bool extend);
+    SofaState &s, int i, int j, Sink &sink, bool extend);
 
 // extends the inner corner
 void extend_line_left_right(

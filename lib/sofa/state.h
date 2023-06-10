@@ -22,6 +22,7 @@ class SofaState {
     SofaState() = delete;
     // Constructors
     SofaState(const SofaContext &ctx, int i);
+    // TODO: remove copy constructor
     SofaState(const SofaState &other);
     // Read from a file
     explicit SofaState(const SofaContext &ctx, const char *file);

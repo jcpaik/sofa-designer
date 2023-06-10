@@ -29,8 +29,7 @@ class SofaBranchTree {
     const std::vector<SofaState> &valid_states() const;
 
     // Runs a branch-and-bound algorithm by adding i'th corner
-    // TODO: parallelize this
-    void add_corner(int i, bool extend_in = true, bool extend_out = true, int nthread = 1);  
+    void add_corner(int i, bool extend = true, int nthread = 1);  
 
     // TODO: Sets tqdm visibility
     void show_tqdm(bool flag);
