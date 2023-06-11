@@ -3,7 +3,9 @@
 ## What it is
 
 The program is the computer-assited part of a proof of the optimality of Gerver's sofa in progress.
-It is developed by [Jineon Baek](https://jcpaik.github.io/). 
+It is developed by [Jineon Baek](https://jcpaik.github.io/).
+
+For a detailed descripton of how the software works, please check the file [sofa-designer.pdf](sofa-designer.pdf).
 
 ## Structure
 
