@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <vector>
 
 #include "number.h"
@@ -37,10 +38,15 @@ class SofaBranchTree {
     friend CerealWriter &operator<<(CerealWriter &out, 
                                     const SofaBranchTree &v);
     friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
+
+    int new_state_id();
  
   private:
     int n;
     // List of indices unioned so far with `add_corner`
     std::vector<int> indices_;
     std::vector<SofaState> valid_states_;
+
+    std::mutex lock_;
+    int last_state_id_;
 };

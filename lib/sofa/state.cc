@@ -3,11 +3,13 @@
 #include <cassert>
 #include <iostream>
 
+#include "branch_tree.h"
 #include "qp.h"
 #include "cereal.h"
 
-SofaState::SofaState(const SofaContext &ctx, int i)
-    : ctx(ctx), 
+SofaState::SofaState(const SofaBranchTree &tree, int i)
+    : ctx(tree.ctx),
+      tree(tree), 
       is_valid_(true), 
       e_({0, i, i - ctx.n(), 0}), 
       conds_(ctx.default_constraints()),
@@ -16,8 +18,9 @@ SofaState::SofaState(const SofaContext &ctx, int i)
   update_();
 }
 
-SofaState::SofaState(const SofaState& s)
+SofaState::SofaState(const SofaState &s)
     : ctx(s.ctx), 
+      tree(s.tree),
       is_valid_(s.is_valid_),
       e_(s.e_), 
       conds_(s.conds_), 
@@ -26,11 +29,13 @@ SofaState::SofaState(const SofaState& s)
       id_(s.id_) {
 }
 
-SofaState::SofaState(const SofaContext &ctx, const char *file) : ctx(ctx) {
+SofaState::SofaState(const SofaBranchTree &tree, const char *file) 
+    : ctx(tree.ctx), tree(tree) {
   load(file, *this);
 }
 
-SofaState::SofaState(const SofaContext &ctx, CerealReader &reader) : ctx(ctx) {
+SofaState::SofaState(const SofaBranchTree &tree, CerealReader &reader)
+    : ctx(tree.ctx), tree(tree) {
   reader >> *this;
 }
 

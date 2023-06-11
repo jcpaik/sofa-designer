@@ -190,7 +190,7 @@ CerealReader &operator>>(CerealReader &in, SofaBranchTree &v) {
   tqdm bar;
   for (size_t i = 0; i < sz; i++) {
     bar.progress(i, sz);
-    v.valid_states_.push_back(SofaState(v.ctx, in));
+    v.valid_states_.push_back(SofaState(v, in));
   }
   bar.finish();
   return in;

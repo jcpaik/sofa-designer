@@ -13,7 +13,7 @@
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx, int i)
     : ctx(ctx), n(ctx.n()) {
-  valid_states_.push_back(SofaState(ctx, i));
+  valid_states_.push_back(SofaState(*this, i));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
 }
@@ -63,4 +63,10 @@ void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
     for (const auto &vv : res)
       valid_states_.push_back(vv);
   }
+}
+
+int SofaBranchTree::new_state_id() {
+  std::lock_guard<std::mutex> guard(lock_);
+  last_state_id_++;
+  return last_state_id_;
 }
