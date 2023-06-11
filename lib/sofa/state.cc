@@ -3,32 +3,39 @@
 #include <cassert>
 #include <iostream>
 
+#include "branch_tree.h"
 #include "qp.h"
 #include "cereal.h"
 
-SofaState::SofaState(const SofaContext &ctx, int i)
-    : ctx(ctx), 
+SofaState::SofaState(SofaBranchTree &tree, int i)
+    : ctx(tree.ctx),
+      tree(tree), 
       is_valid_(true), 
       e_({0, i, i - ctx.n(), 0}), 
-      conds_(ctx.default_constraints()) {
+      conds_(ctx.default_constraints()),
+      id_(0) {
   conds_.push_back(ctx.is_over(i, i - ctx.n(), 0));
   update_();
 }
 
-SofaState::SofaState(const SofaState& s)
+SofaState::SofaState(const SofaState &s)
     : ctx(s.ctx), 
+      tree(s.tree),
       is_valid_(s.is_valid_),
       e_(s.e_), 
       conds_(s.conds_), 
       area_(s.area_), 
-      vars_(s.vars_) {
+      vars_(s.vars_),
+      id_(s.id_) {
 }
 
-SofaState::SofaState(const SofaContext &ctx, const char *file) : ctx(ctx) {
+SofaState::SofaState(SofaBranchTree &tree, const char *file) 
+    : ctx(tree.ctx), tree(tree) {
   load(file, *this);
 }
 
-SofaState::SofaState(const SofaContext &ctx, CerealReader &reader) : ctx(ctx) {
+SofaState::SofaState(SofaBranchTree &tree, CerealReader &reader)
+    : ctx(tree.ctx), tree(tree) {
   reader >> *this;
 }
 
@@ -68,10 +75,21 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
+  assert(is_valid_);
+
+  int parent_id = this->id_;
+  int child_left_id = tree.new_state_id_();
+  int child_right_id = tree.new_state_id_();
+
   SofaState other(*this);
   this->impose(ineq);
-  // Inequality negation is operator-()
+  this->id_ = child_left_id;
   other.impose(-ineq);
+  other.id_ = child_right_id;
+
+  tree.split_states_.emplace_back(
+    parent_id, ineq, child_left_id, child_right_id);
+
   return other;
 }
 
@@ -128,13 +146,14 @@ bool SofaState::is_compatible(
 }
 
 void SofaState::update_() {
-  if (is_valid_) {
-    auto sol = nonnegative_maximize_quadratic_form(ctx.area(e_), ctx, conds_);
-    assert(sol.status != CGAL::QP_UNBOUNDED);
-    if (sol.status == CGAL::QP_INFEASIBLE) {
-      is_valid_ = false;
-      return;
-    }
+  if (!is_valid_)
+    return;
+  
+  auto sol = nonnegative_maximize_quadratic_form(ctx.area(e_), ctx, conds_);
+  assert(sol.status != CGAL::QP_UNBOUNDED);
+  if (sol.status == CGAL::QP_INFEASIBLE) {
+    is_valid_ = false;
+  } else {
     // sol.status == CGAL::QP_OPTIMAL
     area_ = sol.value;
     vars_ = sol.variables;
@@ -142,7 +161,11 @@ void SofaState::update_() {
     // TODO: change constant
     if (area_ < QT(22195, 10000)) {
       is_valid_ = false;
-      return;
     }
+  }
+
+  // state turned into invalid one
+  if (!is_valid_) {
+    tree.invalid_states_.push_back(*this);
   }
 }

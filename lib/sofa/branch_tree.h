@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <vector>
 
 #include "number.h"
@@ -8,6 +9,23 @@
 #include "context.h"
 #include "qp.h"
 #include "state.h"
+
+struct SplitState {
+  int id;
+  SofaConstraintProbe split_by;
+  int child_left_id;
+  int child_right_id;
+
+  SplitState(
+    int id, 
+    SofaConstraintProbe split_by, 
+    int child_left_id, 
+    int child_right_id) :
+      id(id),
+      split_by(split_by),
+      child_left_id(child_left_id),
+      child_right_id(child_right_id) {}
+};
 
 class SofaBranchTree {
   public:
@@ -29,8 +47,7 @@ class SofaBranchTree {
     const std::vector<SofaState> &valid_states() const;
 
     // Runs a branch-and-bound algorithm by adding i'th corner
-    // TODO: parallelize this
-    void add_corner(int i, bool extend_in = true, bool extend_out = true, int nthread = 1);  
+    void add_corner(int i, bool extend = true, int nthread = 1);  
 
     // TODO: Sets tqdm visibility
     void show_tqdm(bool flag);
@@ -38,10 +55,23 @@ class SofaBranchTree {
     friend CerealWriter &operator<<(CerealWriter &out, 
                                     const SofaBranchTree &v);
     friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
- 
+
   private:
     int n;
     // List of indices unioned so far with `add_corner`
     std::vector<int> indices_;
     std::vector<SofaState> valid_states_;
+
+    // Dead states
+    std::vector<SofaState> invalid_states_;
+
+    // Splitting information
+    std::mutex lock_;
+    int last_state_id_;
+    int new_state_id_();
+
+    std::vector<SplitState> split_states_;
+
+    friend SofaState SofaState::split(SofaConstraintProbe cond);
+    friend void SofaState::update_();
 };

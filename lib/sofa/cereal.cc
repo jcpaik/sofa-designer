@@ -159,6 +159,7 @@ CerealReader &operator>>(CerealReader &in, SofaContext &v) {
 }
 
 CerealWriter &operator<<(CerealWriter &out, const SofaState &v) {
+  out << v.id_;
   out << v.is_valid_;
   out << v.e_;
   out << v.conds_;
@@ -168,6 +169,7 @@ CerealWriter &operator<<(CerealWriter &out, const SofaState &v) {
 }
 
 CerealReader &operator>>(CerealReader &in, SofaState &v) {
+  in >> v.id_;
   in >> v.is_valid_;
   in >> v.e_;
   in >> v.conds_;
@@ -190,7 +192,7 @@ CerealReader &operator>>(CerealReader &in, SofaBranchTree &v) {
   tqdm bar;
   for (size_t i = 0; i < sz; i++) {
     bar.progress(i, sz);
-    v.valid_states_.emplace_back(v.ctx, in);
+    v.valid_states_.push_back(SofaState(v, in));
   }
   bar.finish();
   return in;

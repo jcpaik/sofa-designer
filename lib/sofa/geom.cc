@@ -7,8 +7,9 @@ LinearFormPoint::LinearFormPoint() = default;
 LinearFormPoint::LinearFormPoint(int d) : x(d), y(d) {
 }
 
-LinearFormPoint::LinearFormPoint(const LinearForm &x, 
-                                        const LinearForm &y) 
+LinearFormPoint::LinearFormPoint(
+  const LinearForm &x, 
+  const LinearForm &y) 
     : x(x), y(y) {
   assert(x.d() == y.d());
 }

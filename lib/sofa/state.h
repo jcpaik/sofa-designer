@@ -12,21 +12,18 @@
 
 class CerealWriter;
 class CerealReader;
+class SofaBranchTree;
 
 class SofaState {
   public:
     // The context the state depends on
     const SofaContext &ctx;
+    SofaBranchTree &tree;
 
     // Prevent SofaState with no context
     SofaState() = delete;
-    // Constructors
-    SofaState(const SofaContext &ctx, int i);
+    // TODO: remove copy constructor
     SofaState(const SofaState &other);
-    // Read from a file
-    explicit SofaState(const SofaContext &ctx, const char *file);
-    // Read from a stream
-    explicit SofaState(const SofaContext &ctx, CerealReader &reader);
 
     // Prevent any assignment between states
     // No state is overwritten
@@ -60,10 +57,22 @@ class SofaState {
     // Does not store/load context information
     friend CerealWriter &operator<<(CerealWriter &out, const SofaState &v);
     friend CerealReader &operator>>(CerealReader &in, SofaState &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
 
     Json::Value json();
     
   private:
+    friend class SofaBranchTree;
+
+    // Constructors
+    SofaState(SofaBranchTree &tree, int i);
+    // Read from a file
+    explicit SofaState(SofaBranchTree &tree, const char *file);
+    // Read from a stream
+    explicit SofaState(SofaBranchTree &tree, CerealReader &reader);
+
+    int id_;
+
     bool is_valid_;
     std::vector<int> e_; 
     SofaConstraints conds_;
