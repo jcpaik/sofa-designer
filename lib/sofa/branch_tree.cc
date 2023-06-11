@@ -13,7 +13,7 @@
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx, int i)
     : ctx(ctx), n(ctx.n()) {
-  valid_states_.emplace_back(ctx, i);
+  valid_states_.push_back(SofaState(ctx, i));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
 }

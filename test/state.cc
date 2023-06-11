@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "sofa/context.h"
-#include "sofa/state.h"
+#include "sofa/branch_tree.h"
 
 TEST_CASE( "Checking exactness of state", "[QP, STATE]" ) {
   SofaContext ctx( {
@@ -17,7 +17,8 @@ TEST_CASE( "Checking exactness of state", "[QP, STATE]" ) {
   NT a("858413240226912435793494170653955337517692586819527086695188");
   NT b("347534368299812191344928277446711705522020432192595617308389");
   QT q(a, b);
-  SofaState s(ctx, 4);
+  SofaBranchTree t(ctx, 4);
+  SofaState s = t.valid_states()[0];
   s.update_e({0, 1, 2, 5, -3, 4, -4, 3, -5, -2, -1, 0});
   auto v = s.area();
   REQUIRE(v == q);
