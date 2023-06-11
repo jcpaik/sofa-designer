@@ -62,6 +62,10 @@ class SofaBranchTree {
     std::vector<int> indices_;
     std::vector<SofaState> valid_states_;
 
+    // Dead states
+    std::vector<SofaState> invalid_states_;
+
+    // Splitting information
     std::mutex lock_;
     int last_state_id_;
     int new_state_id_();
@@ -69,4 +73,5 @@ class SofaBranchTree {
     std::vector<SplitState> split_states_;
 
     friend SofaState SofaState::split(SofaConstraintProbe cond);
+    friend void SofaState::update_();
 };

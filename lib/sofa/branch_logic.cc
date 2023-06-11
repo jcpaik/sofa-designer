@@ -51,11 +51,14 @@ void add_corner(SofaState &s, int i, Sink &sink, bool extend) {
       // handle case when p(i, i - n) is under the trapezoids
       if (0 < j && j < m) {
         auto under = cur.split(s.ctx.is_over(i, i - n, s.e(j)));
-        if (extend) {
-          add_corner_inside(under, i, j, sink);
-        } else {
-          sink.push_back(under);
+        if (under.is_valid()) {
+          if (extend)
+            add_corner_inside(under, i, j, sink);
+          else
+            sink.push_back(under);
         }
+        if (!cur.is_valid())
+          continue;
       }
       // now handle case when it's over
       add_corner_outside(cur, i, j, sink, extend);
@@ -216,7 +219,8 @@ void extend_line_right_over(
   int m = int(s.e().size()) - 1;
   if (pl >= m) {
     assert(pl == m);
-    sink.push_back(s);
+    if (s.is_valid())
+      sink.push_back(s);
   } else {
     assert(s.e(pl) != l);
     if (s.e(pl) > l) {

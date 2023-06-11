@@ -63,6 +63,7 @@ void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
     for (const auto &vv : res)
       valid_states_.push_back(vv);
   }
+  assert(split_states_.size() + 1 == valid_states_.size() + invalid_states_.size());
 }
 
 int SofaBranchTree::new_state_id_() {
