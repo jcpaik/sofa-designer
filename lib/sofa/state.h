@@ -18,7 +18,7 @@ class SofaState {
   public:
     // The context the state depends on
     const SofaContext &ctx;
-    const SofaBranchTree &tree;
+    SofaBranchTree &tree;
 
     // Prevent SofaState with no context
     SofaState() = delete;
@@ -65,11 +65,11 @@ class SofaState {
     friend class SofaBranchTree;
 
     // Constructors
-    SofaState(const SofaBranchTree &tree, int i);
+    SofaState(SofaBranchTree &tree, int i);
     // Read from a file
-    explicit SofaState(const SofaBranchTree &tree, const char *file);
+    explicit SofaState(SofaBranchTree &tree, const char *file);
     // Read from a stream
-    explicit SofaState(const SofaBranchTree &tree, CerealReader &reader);
+    explicit SofaState(SofaBranchTree &tree, CerealReader &reader);
 
     int id_;
 

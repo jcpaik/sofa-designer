@@ -7,7 +7,7 @@
 #include "qp.h"
 #include "cereal.h"
 
-SofaState::SofaState(const SofaBranchTree &tree, int i)
+SofaState::SofaState(SofaBranchTree &tree, int i)
     : ctx(tree.ctx),
       tree(tree), 
       is_valid_(true), 
@@ -29,12 +29,12 @@ SofaState::SofaState(const SofaState &s)
       id_(s.id_) {
 }
 
-SofaState::SofaState(const SofaBranchTree &tree, const char *file) 
+SofaState::SofaState(SofaBranchTree &tree, const char *file) 
     : ctx(tree.ctx), tree(tree) {
   load(file, *this);
 }
 
-SofaState::SofaState(const SofaBranchTree &tree, CerealReader &reader)
+SofaState::SofaState(SofaBranchTree &tree, CerealReader &reader)
     : ctx(tree.ctx), tree(tree) {
   reader >> *this;
 }
@@ -75,11 +75,19 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
+  int parent_id = this->id_;
+  int child_left_id = tree.new_state_id_();
+  int child_right_id = tree.new_state_id_();
+
   SofaState other(*this);
   this->impose(ineq);
-  this->id_ = tree.new_state_id_();
+  this->id_ = child_left_id;
   other.impose(-ineq);
-  other.id_ = tree.new_state_id_();
+  other.id_ = child_right_id;
+
+  tree.split_states_.emplace_back(
+    parent_id, ineq, child_left_id, child_right_id);
+
   return other;
 }
 

@@ -10,6 +10,23 @@
 #include "qp.h"
 #include "state.h"
 
+struct SplitState {
+  int id;
+  SofaConstraintProbe split_by;
+  int child_left_id;
+  int child_right_id;
+
+  SplitState(
+    int id, 
+    SofaConstraintProbe split_by, 
+    int child_left_id, 
+    int child_right_id) :
+      id(id),
+      split_by(split_by),
+      child_left_id(child_left_id),
+      child_right_id(child_right_id) {}
+};
+
 class SofaBranchTree {
   public:
     const SofaContext &ctx;
@@ -48,6 +65,8 @@ class SofaBranchTree {
     std::mutex lock_;
     int last_state_id_;
     int new_state_id_();
+
+    std::vector<SplitState> split_states_;
 
     friend SofaState SofaState::split(SofaConstraintProbe cond);
 };
