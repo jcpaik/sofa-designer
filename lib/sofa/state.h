@@ -70,6 +70,8 @@ class SofaState {
     // Read from a stream
     explicit SofaState(const SofaContext &ctx, CerealReader &reader);
 
+    int id_;
+
     bool is_valid_;
     std::vector<int> e_; 
     SofaConstraints conds_;

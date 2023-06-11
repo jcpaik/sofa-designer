@@ -10,7 +10,8 @@ SofaState::SofaState(const SofaContext &ctx, int i)
     : ctx(ctx), 
       is_valid_(true), 
       e_({0, i, i - ctx.n(), 0}), 
-      conds_(ctx.default_constraints()) {
+      conds_(ctx.default_constraints()),
+      id_(0) {
   conds_.push_back(ctx.is_over(i, i - ctx.n(), 0));
   update_();
 }
@@ -21,7 +22,8 @@ SofaState::SofaState(const SofaState& s)
       e_(s.e_), 
       conds_(s.conds_), 
       area_(s.area_), 
-      vars_(s.vars_) {
+      vars_(s.vars_),
+      id_(s.id_) {
 }
 
 SofaState::SofaState(const SofaContext &ctx, const char *file) : ctx(ctx) {
@@ -69,8 +71,8 @@ void SofaState::impose(const SofaConstraints &conds) {
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
   SofaState other(*this);
+  // TODO: update new IDs
   this->impose(ineq);
-  // Inequality negation is operator-()
   other.impose(-ineq);
   return other;
 }
