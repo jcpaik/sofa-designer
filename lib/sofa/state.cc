@@ -76,9 +76,10 @@ void SofaState::impose(const SofaConstraints &conds) {
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
   SofaState other(*this);
-  // TODO: update new IDs
   this->impose(ineq);
+  this->id_ = tree.new_state_id_();
   other.impose(-ineq);
+  other.id_ = tree.new_state_id_();
   return other;
 }
 

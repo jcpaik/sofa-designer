@@ -65,7 +65,7 @@ void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
   }
 }
 
-int SofaBranchTree::new_state_id() {
+int SofaBranchTree::new_state_id_() {
   std::lock_guard<std::mutex> guard(lock_);
   last_state_id_++;
   return last_state_id_;

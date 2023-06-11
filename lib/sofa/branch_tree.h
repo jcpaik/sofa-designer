@@ -39,8 +39,6 @@ class SofaBranchTree {
                                     const SofaBranchTree &v);
     friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
 
-    int new_state_id();
- 
   private:
     int n;
     // List of indices unioned so far with `add_corner`
@@ -49,4 +47,7 @@ class SofaBranchTree {
 
     std::mutex lock_;
     int last_state_id_;
+    int new_state_id_();
+
+    friend SofaState SofaState::split(SofaConstraintProbe cond);
 };
