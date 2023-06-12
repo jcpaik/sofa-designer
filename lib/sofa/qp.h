@@ -3,6 +3,8 @@
 #include <vector>
 #include <iostream>
 
+#include <boost/optional.hpp>
+
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
 
@@ -19,6 +21,8 @@ struct NonnegativeQPSolution {
   CGAL::Quadratic_program_status status;
   std::vector<QT> variables;
   QT value;
+  // dummy entry - to check if boost::optional works
+  boost::optional<int> invalid_proof;
 };
 
 NonnegativeQPSolution nonnegative_maximize_quadratic_form(
