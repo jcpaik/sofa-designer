@@ -1,5 +1,7 @@
 #include "branch_logic.h"
 
+#include "expect.h"
+
 // case where point p_i = p(i, i - n) is inside triangular region
 void add_corner_inside(
     SofaState &s, int i, int j, Sink &sink);
@@ -145,14 +147,14 @@ void extend_line_left_right(
   int l = 0;
   while (l < s.e().size() && s.e(l) != i) 
     l++;
-  assert(l + 1 < s.e().size() && s.e(l + 1) == i - n);
+  expect(l + 1 < s.e().size() && s.e(l + 1) == i - n);
   extend_line_left_over(s, i, l - 1, sls);
 
   for (auto &sl : sls) {
     int r = 0;
     while (r < sl.e().size() && sl.e(r) != i - n)
       r++;
-    assert(sl.e(r - 1) == i);
+    expect(sl.e(r - 1) == i);
     extend_line_right_over(sl, i - n, r + 1, sink);
   }
 }
@@ -161,11 +163,11 @@ void extend_line_left_right(
 // checking whether (pl - 1, pl) is over 'l' or not
 void extend_line_left_over(SofaState &s, int l, int pl, Sink &sink) {
   if (pl <= 0) {
-    assert(pl == 0);
+    expect(pl == 0);
     if (s.is_valid())
       sink.push_back(s);
   } else { // pl > 0
-    assert(s.e(pl) != l);
+    expect(s.e(pl) != l);
     if (s.e(pl) < l) { // no possibility for going under
       extend_line_left_over(s, l, pl - 1, sink);
     } else { // s.e(cl) > i, so check possibility for left_under
@@ -184,7 +186,7 @@ void extend_line_left_over(SofaState &s, int l, int pl, Sink &sink) {
 void extend_line_left_under(
     SofaState &s, int l, int pl, int cl, Sink &sink) {
   if (pl <= 0) {
-    assert(pl == 0);
+    expect(pl == 0);
     auto e = s.e();
     e.erase(e.begin() + 1, e.begin() + cl);
     e.insert(e.begin() + 1, l);
@@ -192,7 +194,7 @@ void extend_line_left_under(
     if (s.is_valid())  
       sink.push_back(s);
   } else { // cl > 0
-    assert(s.e(pl) != l);
+    expect(s.e(pl) != l);
     if (s.e(pl) > l) { // still under
       extend_line_left_under(s, l, pl - 1, cl, sink);
     } else { 
@@ -218,11 +220,11 @@ void extend_line_right_over(
     SofaState &s, int l, int pl, Sink &sink) {
   int m = int(s.e().size()) - 1;
   if (pl >= m) {
-    assert(pl == m);
+    expect(pl == m);
     if (s.is_valid())
       sink.push_back(s);
   } else {
-    assert(s.e(pl) != l);
+    expect(s.e(pl) != l);
     if (s.e(pl) > l) {
       extend_line_right_over(s, l, pl + 1, sink);
     } else {
@@ -242,7 +244,7 @@ void extend_line_right_under(
     SofaState &s, int l, int pl, int cl, Sink &sink) {
   int m = int(s.e().size()) - 1;
   if (pl >= m) {
-    assert(pl == m);
+    expect(pl == m);
     auto e = s.e();
     e.erase(e.begin() + cl + 1, e.begin() + pl);
     e.insert(e.begin() + cl + 1, l);
@@ -251,7 +253,7 @@ void extend_line_right_under(
       sink.push_back(s);
     }
   } else { // pl < m
-    assert(s.e(pl) != l);
+    expect(s.e(pl) != l);
     if (s.e(pl) < l) { // still under
       extend_line_right_under(s, l, pl + 1, cl, sink);
     } else { // consider over

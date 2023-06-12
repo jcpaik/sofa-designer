@@ -1,6 +1,5 @@
 #include "cereal.h"
 
-#include <cassert>
 #include <cstdlib>
 #include <vector>
 

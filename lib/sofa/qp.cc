@@ -2,10 +2,7 @@
 
 #include <algorithm>
 
-// very hacky way to enable asserts only in this code
-// strong TODO: change assert() to verify() 
-#undef NDEBUG
-#include <cassert>
+#include "expect.h"
 
 bool is_negative_semidefinite(const QuadraticForm &q) {
   return is_negative_semidefinite(q.w2());
@@ -44,7 +41,7 @@ bool is_negative_semidefinite(const std::vector< std::vector<QT> > &mat) {
       std::swap(a[k][k], a[p][p]);
     }
 
-    assert(a[k][k] < 0);
+    expect(a[k][k] < 0);
     d[k] = a[k][k];
     for (int i = k; i < n; i++)
       a[i][k] /= d[k];
@@ -53,7 +50,7 @@ bool is_negative_semidefinite(const std::vector< std::vector<QT> > &mat) {
         a[i][j] -= a[i][k] * a[j][k] * d[k];
   }
   for (int i = 0; i < n; i++)
-    assert(d[i] <= 0);
+    expect(d[i] <= 0);
 
   // `a` is a certificate with permutation vector perm
   // row [i] of mat is in row[perm[i]] of a
@@ -65,7 +62,7 @@ bool is_negative_semidefinite(const std::vector< std::vector<QT> > &mat) {
       QT tot = 0;
       for (int k = 0; k <= i && k <= j; k++)
         tot += a[i][k] * a[j][k] * d[k];
-      assert((perm[i] >= perm[j] ? 
+      expect((perm[i] >= perm[j] ? 
             mat[perm[i]][perm[j]] : 
             mat[perm[j]][perm[i]]) == tot);
     }
@@ -79,8 +76,8 @@ NonnegativeQPSolution nonnegative_maximize_quadratic_form(
     const SofaContext &ctx,
     SofaConstraints ineqs,
     const std::vector<LinearInequality> &extra_ineqs) {
-  assert(q.d() == ctx.d());
-  assert(is_negative_semidefinite(q));
+  expect(q.d() == ctx.d());
+  expect(is_negative_semidefinite(q));
 
   int n = q.d();
   int m = ineqs.size();
@@ -160,7 +157,7 @@ NonnegativeQPSolution nonnegative_maximize_quadratic_form(
   // prevents solver from hitting infinite loop
   ops.set_pricing_strategy(CGAL::QP_BLAND);
   auto sol = CGAL::solve_nonnegative_quadratic_program(qp, NT(), ops);
-  assert(sol.solves_quadratic_program(qp));
+  expect(sol.solves_quadratic_program(qp));
 
   auto value = -sol.objective_value() / d;
 

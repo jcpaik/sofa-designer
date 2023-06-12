@@ -1,13 +1,13 @@
 #include "ineq.h"
 
-#include <cassert>
+#include "expect.h"
 
 LinearInequality::LinearInequality() = default;
 
 LinearInequality::LinearInequality(const std::vector<NT> &a, const NT &b, 
                                CGAL::Comparison_result r)
     : d_(a.size()), a_(a), b_(b), r_(r) {
-  assert(r != CGAL::EQUAL);
+  expect(r != CGAL::EQUAL);
   NT g = b_;
   for (const auto &v : a_)
     g = CGAL::gcd(g, v);
@@ -22,7 +22,7 @@ LinearInequality::LinearInequality(const std::vector<NT> &a, const NT &b,
 LinearInequality::LinearInequality(const std::vector<QT> &a, const QT &b,
                                CGAL::Comparison_result r)
     : d_(a.size()), a_(a.size()), b_(), r_(r) {
-  assert(r != CGAL::EQUAL);
+  expect(r != CGAL::EQUAL);
   NT d = b.denominator();
   for (int i = 0; i < d_; i++) {
     NT ad = a[i].denominator();
@@ -78,7 +78,7 @@ LinearInequality LinearInequality::negate() const {
 }
 
 bool LinearInequality::operator()(const std::vector<QT> &v) const {
-  assert(int(v.size()) == d_);
+  expect(int(v.size()) == d_);
 
   QT asum;
   for (int i = 0; i < d_; i++)

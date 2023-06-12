@@ -1,5 +1,6 @@
 #include "lform.h"
 
+#include "expect.h"
 #include "qform.h"
 
 LinearForm::LinearForm() = default;
@@ -52,7 +53,7 @@ const QT &LinearForm::w1(int i) const {
 }
 
 LinearForm &LinearForm::operator+=(const LinearForm &other) {
-  assert(d_ == other.d_);
+  expect(d_ == other.d_);
 
   w0_ += other.w0_;
   for (int i = 0; i < d_; i++)
@@ -62,7 +63,7 @@ LinearForm &LinearForm::operator+=(const LinearForm &other) {
 }
 
 LinearForm &LinearForm::operator-=(const LinearForm &other) {
-  assert(d_ == other.d_);
+  expect(d_ == other.d_);
 
   w0_ -= other.w0_;
   for (int i = 0; i < d_; i++)
@@ -114,7 +115,7 @@ LinearForm LinearForm::operator/(const QT &c) const {
 }
 
 QuadraticForm LinearForm::operator*(const LinearForm &other) const {
-  assert(d_ == other.d_);
+  expect(d_ == other.d_);
 
   QuadraticForm res(d_);
   res.w0() = w0_ * other.w0_;
@@ -146,7 +147,7 @@ LinearForm &LinearForm::normalize() {
 }
 
 QT LinearForm::operator()(std::vector<QT> v) const {
-  assert(int(v.size()) == d_);
+  expect(int(v.size()) == d_);
 
   QT res = w0_;
   for (int i = 0; i < d_; i++)

@@ -1,15 +1,14 @@
 #include "branch_tree.h"
 
-#include <cassert>
 #include <iostream>
 #include <thread>
 #include <future>
 
 #include "tqdm.h"
 
+#include "expect.h"
 #include "branch_logic.h"
 #include "cereal.h"
-
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx, int i)
     : ctx(ctx), n(ctx.n()) {
@@ -49,7 +48,7 @@ std::vector<SofaState> process(
 }
 
 void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
-  assert(1 <= i && i < n);
+  expect(1 <= i && i < n);
   std::vector<SofaState> cur_states[nthread];
   for (int idx = 0; idx < int(valid_states_.size()); idx++)
     cur_states[idx % nthread].push_back(valid_states_[idx]);
@@ -63,7 +62,7 @@ void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
     for (const auto &vv : res)
       valid_states_.push_back(vv);
   }
-  assert(split_states_.size() + 1 == valid_states_.size() + invalid_states_.size());
+  expect(split_states_.size() + 1 == valid_states_.size() + invalid_states_.size());
 }
 
 int SofaBranchTree::new_state_id_() {
