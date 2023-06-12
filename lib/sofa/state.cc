@@ -1,8 +1,8 @@
 #include "state.h"
 
-#include <cassert>
 #include <iostream>
 
+#include "expect.h"
 #include "branch_tree.h"
 #include "qp.h"
 #include "cereal.h"
@@ -75,7 +75,7 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
-  assert(is_valid_);
+  expect(is_valid_);
 
   int parent_id = this->id_;
   int child_left_id = tree.new_state_id_();
@@ -113,7 +113,7 @@ void SofaState::update_e(const std::vector<int> &e) {
   if (is_valid_) {
     e_ = e;
     auto narea = (ctx.area(e_))(vars_);
-    assert(area_ >= narea);
+    expect(area_ >= narea);
     area_ = narea;
     if (area_ < QT(22195, 10000)) // Optimization
       update_();
@@ -133,7 +133,7 @@ bool SofaState::is_compatible(
 
   auto sol = nonnegative_maximize_quadratic_form(
       ctx.area(e_), ctx, conds_, extra_ineqs);
-  assert(sol.status != CGAL::QP_UNBOUNDED);
+  expect(sol.status != CGAL::QP_UNBOUNDED);
   if (sol.status == CGAL::QP_INFEASIBLE) {
     return false;
   }
@@ -150,14 +150,14 @@ void SofaState::update_() {
     return;
   
   auto sol = nonnegative_maximize_quadratic_form(ctx.area(e_), ctx, conds_);
-  assert(sol.status != CGAL::QP_UNBOUNDED);
+  expect(sol.status != CGAL::QP_UNBOUNDED);
   if (sol.status == CGAL::QP_INFEASIBLE) {
     is_valid_ = false;
   } else {
     // sol.status == CGAL::QP_OPTIMAL
     area_ = sol.value;
     vars_ = sol.variables;
-    assert((ctx.area(e_))(vars_) == area_);
+    expect((ctx.area(e_))(vars_) == area_);
     // TODO: change constant
     if (area_ < QT(22195, 10000)) {
       is_valid_ = false;

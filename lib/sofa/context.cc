@@ -1,5 +1,6 @@
 #include "context.h"
 
+#include "expect.h"
 #include "cereal.h"
 
 SofaContext::SofaContext(const std::vector<Vector> &u) {
@@ -17,7 +18,7 @@ void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &nam
 
 void SofaContext::initialize(const std::vector<Vector> &u_in) {
   // Inequalities start from index 1
-  assert(int(ineqs_.size()) == 0);
+  expect(int(ineqs_.size()) == 0);
   // The 'null' 0'th inequality
   ineqs_.resize(1);
   ineq_names_.resize(1);
@@ -34,11 +35,11 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   }
   // Check validity of u_ and v_
   for (int i = 0; i <= n_; i++) {
-    assert(u_[i].norm_squared() == 1);
-    assert(u_[i].x >= 0 && u_[i].y >= 0);
+    expect(u_[i].norm_squared() == 1);
+    expect(u_[i].x >= 0 && u_[i].y >= 0);
     if (i > 0) {
-      assert(u_[i - 1].x > u_[i].x);
-      assert(u_[i - 1].y < u_[i].y);
+      expect(u_[i - 1].x > u_[i].x);
+      expect(u_[i - 1].y < u_[i].y);
     }
   }
 
@@ -61,7 +62,7 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   }
 
   // Check the number of primitive variables introduced
-  assert(vidx == d_);
+  expect(vidx == d_);
 
   // Set lines
   a_.resize(2 * n_ + 1);
@@ -78,11 +79,11 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
     A_[i] = intersection(a_[i - 1], a_[i]);
   A_[2 * n_ + 1] = LinearFormPoint(-s_[2 * n_], zero);
 
-  assert(A_[n_].y == one);
-  assert(A_[n_ + 1].y == one);
-  assert(A_[2 * n_ + 1].y == zero);
-  assert(A_[1].x == A_[0].x);
-  assert(A_[2 * n_].x == A_[2 * n_ + 1].x);
+  expect(A_[n_].y == one);
+  expect(A_[n_ + 1].y == one);
+  expect(A_[2 * n_ + 1].y == zero);
+  expect(A_[1].x == A_[0].x);
+  expect(A_[2 * n_].x == A_[2 * n_ + 1].x);
 
   // Prepare to add default_ineqs_ to ineqs_
   default_ineqs_offset_ = int(ineqs_.size());
@@ -124,7 +125,7 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
     for (int j = -(n_ - 1); j <= (n_ - 1); j++)
       for (int i = -(n_ - 1); i < j; i++) {
         if (i != l - n_ && i != l && j != l - n_ && j != l) {
-          assert(is_left(i, j, l) == int(ineqs_.size()));
+          expect(is_left(i, j, l) == int(ineqs_.size()));
           add_ineq_(
             p(l - n_, l).x - p(i, j).x >= 0,
             std::string("l ") + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(l));
@@ -139,7 +140,7 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   for (int k = -(n_ - 1); k <= (n_ - 1); k++)
     for (int j = -(n_ - 1); j < k; j++)
       for (int i = -(n_ - 1); i < j; i++) {
-        assert(is_over(i, j, k) == int(ineqs_.size()));
+        expect(is_over(i, j, k) == int(ineqs_.size()));
         const auto &ptr = p(i, j);
         const auto d = dot(line(k).a, ptr);
         add_ineq_(d - line(k).b >= 0,
@@ -223,9 +224,9 @@ SofaConstraints SofaContext::default_constraints() const {
 SofaConstraintProbe SofaContext::is_left(int i, int j, int l) const {
   if (i > j)
     std::swap(i, j);
-  assert(-(n_ - 1) <= i && i < j && j <= (n_ - 1));
-  assert(1 <= l && l <= (n_ - 1));
-  assert(i != l - n_ && i != l && j != l - n_ && j != l);
+  expect(-(n_ - 1) <= i && i < j && j <= (n_ - 1));
+  expect(1 <= l && l <= (n_ - 1));
+  expect(i != l - n_ && i != l && j != l - n_ && j != l);
   i += (n_ - 1);
   j += (n_ - 1);
   // 2n_ - 1 C 2    
@@ -241,7 +242,7 @@ SofaConstraintProbe SofaContext::is_right(int i, int j, int l) const {
 }
 
 SofaConstraintProbe SofaContext::is_over(int i, int j, int l) const {
-  assert(i != j && j != l && l != i);
+  expect(i != j && j != l && l != i);
   if (i > j)
     std::swap(i, j);
   bool flip = (i < l && l < j);
@@ -294,12 +295,12 @@ const Vector &SofaContext::v(int i) const {
 
 QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
   int m = int(pl.size());
-  assert(m >= 2);
-  assert(pl.front() == 0);
-  assert(pl.back() == 0);
+  expect(m >= 2);
+  expect(pl.front() == 0);
+  expect(pl.back() == 0);
   for (int i = 1; i <= m - 2; i++) {
-    assert(-(n_ - 1) <= pl[i] && pl[i] <= (n_ - 1));
-    assert(pl[i] != pl[i - 1] && pl[i] != pl[i + 1]);
+    expect(-(n_ - 1) <= pl[i] && pl[i] <= (n_ - 1));
+    expect(pl[i] != pl[i - 1] && pl[i] != pl[i + 1]);
   }
   QuadraticForm area = outer_area_;
   for (int i = 1; i <= m - 2; i++) {
@@ -320,17 +321,17 @@ Json::Value SofaContext::split_values() const {
 }
 
 int SofaContext::index_(int i, int j) const {
-  assert(i >= -(n_ - 1) && i <= n_ - 1);
-  assert(j >= -(n_ - 1) && j <= n_ - 1);
+  expect(i >= -(n_ - 1) && i <= n_ - 1);
+  expect(j >= -(n_ - 1) && j <= n_ - 1);
   i += (n_ - 1);
   j += (n_ - 1);
   return i * (2 * n_ - 1) + j;
 }
 
 int SofaContext::index_(int i, int j, int k) const {
-  assert(i >= -(n_ - 1) && i <= n_ - 1);
-  assert(j >= -(n_ - 1) && j <= n_ - 1);
-  assert(k >= -(n_ - 1) && k <= n_ - 1);
+  expect(i >= -(n_ - 1) && i <= n_ - 1);
+  expect(j >= -(n_ - 1) && j <= n_ - 1);
+  expect(k >= -(n_ - 1) && k <= n_ - 1);
   i += (n_ - 1);
   j += (n_ - 1);
   k += (n_ - 1);

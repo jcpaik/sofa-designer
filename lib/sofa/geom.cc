@@ -1,5 +1,7 @@
 #include "geom.h"
 
+#include "expect.h"
+
 // LinearFormPoint
 
 LinearFormPoint::LinearFormPoint() = default;
@@ -11,7 +13,7 @@ LinearFormPoint::LinearFormPoint(
   const LinearForm &x, 
   const LinearForm &y) 
     : x(x), y(y) {
-  assert(x.d() == y.d());
+  expect(x.d() == y.d());
 }
 
 int LinearFormPoint::d() const { 
@@ -178,17 +180,17 @@ LinearFormPoint intersection(const Line &l1, const Line &l2) {
     l2.a.y * l1.b - l1.a.y * l2.b,
     l1.a.x * l2.b - l2.a.x * l1.b
   ) / (l1.a.x * l2.a.y - l2.a.x * l1.a.y);
-  assert(dot(p, l1.a) == l1.b && dot(p, l2.a) == l2.b);
+  expect(dot(p, l1.a) == l1.b && dot(p, l2.a) == l2.b);
   return p;
 }
 
 QuadraticForm polygon_area(const std::vector<LinearFormPoint> &points) {
   int n = points.size();
-  assert(n > 0);
+  expect(n > 0);
   int d = points.front().d();
   QuadraticForm area(d);
   for (int i = 0; i < n; i++) {
-    assert(points[i].d() == d);
+    expect(points[i].d() == d);
     const auto &cur = points[i];
     const auto &nxt = points[(i + 1) % n];
     area += cur.x * nxt.y - cur.y * nxt.x;
