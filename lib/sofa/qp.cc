@@ -71,7 +71,7 @@ bool is_negative_semidefinite(const std::vector< std::vector<QT> > &mat) {
   return true;
 }
 
-NonnegativeQPSolution nonnegative_maximize_quadratic_form(
+SofaAreaQPSolution sofa_area_qp(
     const QuadraticForm &q, 
     const SofaContext &ctx,
     SofaConstraints ineqs,

@@ -131,7 +131,7 @@ bool SofaState::is_compatible(
   if (!is_valid_)
     return false; // If not valid, it's incompatible with any condition
 
-  auto sol = nonnegative_maximize_quadratic_form(
+  auto sol = sofa_area_qp(
       ctx.area(e_), ctx, conds_, extra_ineqs);
   expect(sol.status != CGAL::QP_UNBOUNDED);
   if (sol.status == CGAL::QP_INFEASIBLE) {
@@ -149,7 +149,7 @@ void SofaState::update_() {
   if (!is_valid_)
     return;
   
-  auto sol = nonnegative_maximize_quadratic_form(ctx.area(e_), ctx, conds_);
+  auto sol = sofa_area_qp(ctx.area(e_), ctx, conds_);
   expect(sol.status != CGAL::QP_UNBOUNDED);
   if (sol.status == CGAL::QP_INFEASIBLE) {
     is_valid_ = false;
