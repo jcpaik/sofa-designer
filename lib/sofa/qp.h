@@ -22,9 +22,9 @@ struct SofaAreaQPInvalidProof {
 };
 
 struct SofaAreaQPSolution {
-  CGAL::Quadratic_program_status status;
   std::vector<QT> variables;
   QT value;
+  CGAL::Quadratic_program_status status;
   // dummy entry - to check if boost::optional works
   boost::optional<SofaAreaQPInvalidProof> invalid_proof;
 };

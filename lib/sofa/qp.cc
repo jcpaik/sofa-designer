@@ -159,11 +159,19 @@ SofaAreaQPSolution sofa_area_qp(
   auto sol = CGAL::solve_nonnegative_quadratic_program(qp, NT(), ops);
   expect(sol.solves_quadratic_program(qp));
 
-  auto value = -sol.objective_value() / d;
+  auto max_area = (-sol.objective_value() / d).normalize();
 
-  return { 
-    sol.status(), 
-    std::vector<QT>(sol.variable_values_begin(), sol.variable_values_end()), 
-    value.normalize() 
-  };
+  expect(sol.status() != CGAL::QP_UNBOUNDED);
+  if (sol.status() == CGAL::QP_INFEASIBLE) {
+    return {
+      { },
+      0, 
+    };
+  } else {
+    // sol.status == CGAL::QP_OPTIMAL
+    return { 
+      std::vector<QT>(sol.variable_values_begin(), sol.variable_values_end()), 
+      max_area 
+    };
+  }
 }
