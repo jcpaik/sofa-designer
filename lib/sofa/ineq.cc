@@ -1,13 +1,17 @@
 #include "ineq.h"
 
+#include <algorithm>
+
 #include "expect.h"
 
 LinearInequality::LinearInequality() = default;
 
-LinearInequality::LinearInequality(const std::vector<NT> &a, const NT &b, 
-                               CGAL::Comparison_result r)
+LinearInequality::LinearInequality(
+    const std::vector<NT> &a, const NT &b, 
+    CGAL::Comparison_result r)
     : d_(a.size()), a_(a), b_(b), r_(r) {
   expect(r != CGAL::EQUAL);
+
   NT g = b_;
   for (const auto &v : a_)
     g = CGAL::gcd(g, v);
@@ -17,10 +21,13 @@ LinearInequality::LinearInequality(const std::vector<NT> &a, const NT &b,
     for (auto &v : a_)
       v /= g;
   }
+
+  scale_ = QT{1, g};
 }
 
-LinearInequality::LinearInequality(const std::vector<QT> &a, const QT &b,
-                               CGAL::Comparison_result r)
+LinearInequality::LinearInequality(
+    const std::vector<QT> &a, const QT &b,
+    CGAL::Comparison_result r)
     : d_(a.size()), a_(a.size()), b_(), r_(r) {
   expect(r != CGAL::EQUAL);
   NT d = b.denominator();
@@ -32,6 +39,8 @@ LinearInequality::LinearInequality(const std::vector<QT> &a, const QT &b,
   for (int i = 0; i < d_; i++)
     a_[i] = a[i].numerator() * (d / a[i].denominator());
   b_ = b.numerator() * (d / b.denominator());
+
+  scale_ = d;
 }
 
 int LinearInequality::d() const {
@@ -68,6 +77,22 @@ CGAL::Comparison_result &LinearInequality::r() {
 
 const CGAL::Comparison_result &LinearInequality::r() const {
   return r_;
+}
+
+const QT &LinearInequality::scale() const {
+  return scale_;
+}
+
+const LinearForm LinearInequality::nonneg_value() const {
+  const bool is_larger = (r_ == CGAL::LARGER);
+  std::vector<QT> weights(d_);
+  QT bias;
+
+  for (int i = 0; i < d_; i++)
+    weights[i] = (is_larger ? a_[i] : -a_[i]) / scale_;
+  bias = (is_larger ? -b_ : b_) / scale_;
+
+  return LinearForm(bias, weights);
 }
 
 LinearInequality LinearInequality::negate() const {
