@@ -82,6 +82,9 @@ SofaAreaResult sofa_area_qp(
   int n = q.d();
   int m = ineqs.size();
 
+  // The CGAL solver accepts integer types
+  // so we need to multiply the whole program with common denominator
+
   // Find the least common multiple of denominators
   NT d = q.w0().denominator();
   for (int j = 0; j < n; j++) {
@@ -126,7 +129,6 @@ SofaAreaResult sofa_area_qp(
     ineqs.push_back(extra_probe);
     extra_probe++;
   }
-  m += num_extra_ineqs;
 
   using AIter = boost::transform_iterator<
     SofaContext::ProbeToA, SofaConstraints::const_iterator>;
@@ -145,7 +147,7 @@ SofaAreaResult sofa_area_qp(
 
   auto qp = CGAL::make_nonnegative_quadratic_program_from_iterators(
       n,
-      m,
+      m + num_extra_ineqs,
       a_iters.begin(),
       b_iter,
       r_iter,
@@ -162,8 +164,46 @@ SofaAreaResult sofa_area_qp(
   auto max_area = (-sol.objective_value() / d).normalize();
 
   expect(sol.status() != CGAL::QP_UNBOUNDED);
-  if (sol.status() == CGAL::QP_INFEASIBLE) {
+  if (sol.is_infeasible()) {
     // identify infeasibility proof and return it
+    std::map<SofaConstraintProbe, QT> lambdas;
+    std::map<int, QT> lambdas_extra;
+    for (int i = 0; i < m + num_extra_ineqs; i++) {
+      QT lambda = *(sol.infeasibility_certificate_begin() + i);
+      if (lambda == 0)
+        continue;
+      
+      const LinearInequality& ineq = (i < m) ?
+          ctx.ineq(ineqs[i]) : extra_ineqs[i - m];
+      expect(
+          (ineq.r() == CGAL::SMALLER && lambda <= 0) ||
+          (ineq.r() == CGAL::LARGER && lambda >= 0));
+      lambda *= ineq.scale();
+      if (lambda < 0)
+        lambda = -lambda;
+      
+      if (i < m)
+        lambdas[i] = lambda;
+      else
+        lambdas_extra[i - m] = lambda;
+    }
+
+    // check contradiction
+    LinearForm x(n);
+    for (auto const& [id, lambda] : lambdas) {
+      expect(lambda > 0);
+      x += ctx.ineq(id).nonneg_value() * lambda;
+    }
+    for (auto const& [id, lambda] : lambdas_extra) {
+      expect(lambda > 0);
+      x += extra_ineqs[id].nonneg_value() * lambda;
+    }
+
+    // x += ineq.nonneg_value() * lambda;
+    expect(x.w0() < 0);
+    for (const auto &val : x.w1())
+      expect(val <= 0);
+
     return {
       { },
       0, 
