@@ -71,7 +71,7 @@ bool is_negative_semidefinite(const std::vector< std::vector<QT> > &mat) {
   return true;
 }
 
-SofaAreaQPSolution sofa_area_qp(
+SofaAreaResult sofa_area_qp(
     const QuadraticForm &q, 
     const SofaContext &ctx,
     SofaConstraints ineqs,
@@ -163,6 +163,7 @@ SofaAreaQPSolution sofa_area_qp(
 
   expect(sol.status() != CGAL::QP_UNBOUNDED);
   if (sol.status() == CGAL::QP_INFEASIBLE) {
+    // identify infeasibility proof and return it
     return {
       { },
       0, 

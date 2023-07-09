@@ -1,9 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <iostream>
-
-#include <boost/optional.hpp>
+#include <utility>
 
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
@@ -17,19 +17,38 @@ bool is_negative_semidefinite(const QuadraticForm &q);
 
 bool is_negative_semidefinite(const std::vector< std::vector<QT> > &a);
 
-struct SofaAreaQPInvalidProof {
-  bool flag;
+struct SofaAreaOptimalityProof {
+  QT max_area;
+  std::vector<QT> maximizer;
+  std::vector< std::vector<QT> > max_transform;
 };
 
-struct SofaAreaQPSolution {
-  std::vector<QT> variables;
-  QT value;
-  CGAL::Quadratic_program_status status;
-  // dummy entry - to check if boost::optional works
-  boost::optional<SofaAreaQPInvalidProof> invalid_proof;
+struct SofaAreaInvalidityProof {
+  std::map<SofaConstraintProbe, QT> weight;
 };
 
-SofaAreaQPSolution sofa_area_qp(
+struct SofaAreaResult {
+  std::variant<SofaAreaOptimalityProof, SofaAreaInvalidityProof> result;
+
+  bool is_optimal() const {
+    return std::holds_alternative<SofaAreaOptimalityProof>(result);
+  }
+
+  explicit operator bool() const {
+    return is_optimal() && 
+      std::get<SofaAreaOptimalityProof>(result).max_area > QT(22195, 10000);
+  }
+
+  const SofaAreaOptimalityProof& optimality_proof() const {
+    return std::get<SofaAreaOptimalityProof>(result);
+  }
+
+  const SofaAreaInvalidityProof& invalidity_proof() const {
+    return std::get<SofaAreaInvalidityProof>(result);
+  }
+};
+
+SofaAreaResult sofa_area_qp(
     const QuadraticForm &area,
     const SofaContext &ctx,
     SofaConstraints cons,
