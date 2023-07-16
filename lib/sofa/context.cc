@@ -1,7 +1,10 @@
 #include "context.h"
 
+#include <string>
+
 #include "expect.h"
 #include "cereal.h"
+#include "json.h"
 
 SofaContext::SofaContext(const std::vector<Vector> &u) {
   initialize(u);
@@ -124,14 +127,11 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   for (int l = 1; l <= (n_ - 1); l++)
     for (int j = -(n_ - 1); j <= (n_ - 1); j++)
       for (int i = -(n_ - 1); i < j; i++) {
-        if (i != l - n_ && i != l && j != l - n_ && j != l) {
-          expect(is_left(i, j, l) == int(ineqs_.size()));
-          add_ineq_(
-            p(l - n_, l).x - p(i, j).x >= 0,
-            std::string("l ") + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(l));
-        } else {
-          add_ineq_(LinearInequality(), "invalid");
-        }
+        expect(is_left(i, j, l) == int(ineqs_.size()));
+        add_ineq_(
+          p(l - n_, l).x - p(i, j).x >= 0,
+          std::string("l ") + std::to_string(i) + " " +
+          std::to_string(j) + " " + std::to_string(l));
       }
 
   // Compute over_ inequalities
@@ -144,7 +144,8 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
         const auto &ptr = p(i, j);
         const auto d = dot(line(k).a, ptr);
         add_ineq_(d - line(k).b >= 0,
-          std::string("o ") + std::to_string(i) + " " + std::to_string(j) + " " + std::to_string(k));
+          std::string("o ") + std::to_string(i) + " " +
+          std::to_string(j) + " " + std::to_string(k));
       }
 
   extra_ineqs_offset_ = int(ineqs_.size());
@@ -226,7 +227,6 @@ SofaConstraintProbe SofaContext::is_left(int i, int j, int l) const {
     std::swap(i, j);
   expect(-(n_ - 1) <= i && i < j && j <= (n_ - 1));
   expect(1 <= l && l <= (n_ - 1));
-  expect(i != l - n_ && i != l && j != l - n_ && j != l);
   i += (n_ - 1);
   j += (n_ - 1);
   // 2n_ - 1 C 2    
@@ -310,14 +310,23 @@ QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
 }
 
 Json::Value SofaContext::split_values() const {
-  Json::Value val;
-  for (int i = 1; i < extra_ineqs_offset_; i++) {
-    if (ineq_names_[i] == "invalid")
+  Json::Value values(Json::arrayValue);
+  values.append(Json::Value::null);
+
+  for (int id = 1; id < extra_ineqs_offset_; id++) {
+    const auto &cur_ineq = ineq(id);
+    const LinearForm lform = cur_ineq.nonneg_value();
+    const auto &ineq_name = ineq_names_[id];
+    if (ineq_name == "invalid")
       continue;
     
-    val[ineq_names_[i]] = i;
+    Json::Value value(Json::objectValue);
+    value["name"] = ineq_name;
+    value["a"] = to_json(lform.w1());
+    value["b"] = to_json(lform.w0());
+    values.append(value);
   }
-  return val;
+  return values;
 }
 
 int SofaContext::index_(int i, int j) const {
