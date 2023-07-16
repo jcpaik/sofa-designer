@@ -25,6 +25,7 @@ struct SofaAreaOptimalityProof {
 
 struct SofaAreaInvalidityProof {
   std::map<SofaConstraintProbe, QT> weight;
+  std::map<int, QT> weight_extra;
 };
 
 struct SofaAreaResult {

@@ -198,16 +198,12 @@ SofaAreaResult sofa_area_qp(
       expect(lambda > 0);
       x += extra_ineqs[id].nonneg_value() * lambda;
     }
-
-    // x += ineq.nonneg_value() * lambda;
+    // we added nonnegative values, but the result is strictly negative
     expect(x.w0() < 0);
     for (const auto &val : x.w1())
       expect(val <= 0);
-
-    return {
-      { },
-      0, 
-    };
+    
+    return {SofaAreaInvalidityProof{lambdas, lambdas_extra}};
   } else {
     // sol.status == CGAL::QP_OPTIMAL
     return { 
