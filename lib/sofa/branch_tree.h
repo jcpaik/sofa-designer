@@ -32,7 +32,7 @@ class SofaBranchTree {
     const SofaContext &ctx;
 
     // Tree with initial search
-    SofaBranchTree(const SofaContext &ctx, int i);
+    SofaBranchTree(const SofaContext &ctx);
     // TODO: Tree from a pre-computed root
     SofaBranchTree(const SofaState &root);
 

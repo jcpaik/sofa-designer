@@ -6,14 +6,13 @@
 #include "branch_tree.h"
 #include "qp.h"
 
-SofaState::SofaState(SofaBranchTree &tree, int i)
+SofaState::SofaState(SofaBranchTree &tree)
     : ctx(tree.ctx),
       tree(tree), 
       is_valid_(true), 
-      e_({0, i, i - ctx.n(), 0}), 
+      e_({0}), 
       conds_(ctx.default_constraints()),
       id_(0) {
-  conds_.push_back(ctx.is_over(i, i - ctx.n(), 0));
   update_();
 }
 

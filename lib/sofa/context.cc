@@ -292,7 +292,7 @@ const Vector &SofaContext::v(int i) const {
 
 QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
   int m = int(pl.size());
-  expect(m >= 2);
+  expect(m >= 1);
   expect(pl.front() == 0);
   expect(pl.back() == 0);
   for (int i = 1; i <= m - 2; i++) {

@@ -9,9 +9,9 @@
 #include "expect.h"
 #include "branch_logic.h"
 
-SofaBranchTree::SofaBranchTree(const SofaContext &ctx, int i)
+SofaBranchTree::SofaBranchTree(const SofaContext &ctx)
     : ctx(ctx), n(ctx.n()) {
-  valid_states_.push_back(SofaState(*this, i));
+  valid_states_.push_back(SofaState(*this));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
 }

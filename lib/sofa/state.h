@@ -57,7 +57,7 @@ class SofaState {
     friend class SofaBranchTree;
 
     // Constructors
-    SofaState(SofaBranchTree &tree, int i);
+    SofaState(SofaBranchTree &tree);
 
     int id_;
 
