@@ -1,6 +1,7 @@
 #include "qp.h"
 
 #include <algorithm>
+#include <iostream>
 
 #include "expect.h"
 
@@ -24,7 +25,7 @@ std::optional<CholeskyLDL> is_negative_semidefinite(const QTMatrix &mat) {
     // 2. the matrix `mat` applied with all previous row/col operations for i >= k
     // this loop updates col k from 2. to 1.
 
-    if (a[k][k] < 0) {
+    if (a[k][k] > 0) {
       return std::nullopt;
     } else if (a[k][k] == 0) {
       for (int i = k + 1; i < n; i++)
@@ -227,7 +228,7 @@ SofaAreaResult sofa_area_qp(
     }
 
     return {SofaAreaOptimalityProof{ 
-      sol.objective_value(),
+      -sol.objective_value(),
       std::vector<QT>(sol.variable_values_begin(), sol.variable_values_end()),
       negdef_proof.value().l,
       negdef_proof.value().d,
