@@ -28,6 +28,8 @@ TEST_CASE( "JSON certificate export of splitting values", "[CERTIFICATE]" ) {
 
   Json::Value vals = ctx.split_values();
   REQUIRE(vals[0].isNull());
+  
+  REQUIRE(linearForm(vals[idx++]) ==  LinearForm::constant(ctx.d(), 10) - ctx.s(2 * n));
 
   for (int i = 0; i <= 2 * n; i++)
     REQUIRE(linearForm(vals[idx++]) == dot(ctx.A(i + 1) - ctx.A(i), ctx.v(i)));
