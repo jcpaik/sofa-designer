@@ -7,6 +7,8 @@
 class LinearForm;
 class CerealReader;
 
+typedef std::vector< std::vector<QT> > QTMatrix;
+
 class QuadraticForm {
   public:
     // Constructors
@@ -14,7 +16,7 @@ class QuadraticForm {
     explicit QuadraticForm(int d);
     QuadraticForm(const LinearForm &l);
     QuadraticForm(const QT &w0, const std::vector<QT> &w1, 
-                  const std::vector< std::vector<QT> > &w2); 
+                  const QTMatrix &w2); 
 
     // Accessors
     int d() const;
@@ -27,8 +29,8 @@ class QuadraticForm {
     QT &w1(int i);
     const QT &w1(int i) const;
 
-    std::vector< std::vector<QT> > &w2();
-    const std::vector< std::vector<QT> > &w2() const;
+    QTMatrix &w2();
+    const QTMatrix &w2() const;
     // when i < j, w2(i, j) is an alias of w2(j, i)
     QT &w2(int i, int j);
     const QT &w2(int i, int j) const;
@@ -62,7 +64,7 @@ class QuadraticForm {
     int d_;
     QT w0_;
     std::vector<QT> w1_;
-    std::vector< std::vector<QT> > w2_;
+    QTMatrix w2_;
 };
 
 // Arithmetic
