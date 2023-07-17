@@ -13,19 +13,26 @@
 #include "ineq.h"
 #include "context.h"
 
-bool is_negative_semidefinite(const QuadraticForm &q);
+struct CholeskyLDL {
+  QTMatrix l;
+  std::vector<QT> d;
+};
 
-bool is_negative_semidefinite(const std::vector< std::vector<QT> > &a);
+std::optional<CholeskyLDL> is_negative_semidefinite(const QTMatrix &mat);
 
+// Area formula = max_area - lambdas . nonnegative_values - (ldl^T) (vector - maximizer)
 struct SofaAreaOptimalityProof {
   QT max_area;
   std::vector<QT> maximizer;
-  std::vector< std::vector<QT> > max_transform;
+  QTMatrix l;
+  std::vector<QT> d;
+  std::map<SofaConstraintProbe, QT> lambdas;
+  std::map<int, QT> lambdas_extra;
 };
 
 struct SofaAreaInvalidityProof {
-  std::map<SofaConstraintProbe, QT> weight;
-  std::map<int, QT> weight_extra;
+  std::map<SofaConstraintProbe, QT> lambdas;
+  std::map<int, QT> lambdas_extra;
 };
 
 struct SofaAreaResult {
