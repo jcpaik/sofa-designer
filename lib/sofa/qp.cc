@@ -228,7 +228,7 @@ SofaAreaResult sofa_area_qp(
     }
 
     return {SofaAreaOptimalityProof{ 
-      -sol.objective_value(),
+      -sol.objective_value() / d,
       std::vector<QT>(sol.variable_values_begin(), sol.variable_values_end()),
       negdef_proof.value().l,
       negdef_proof.value().d,
