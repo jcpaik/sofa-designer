@@ -45,7 +45,7 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
   LinearForm zero(d_);
   LinearForm one = LinearForm::constant(d_, 1);
 
-  // Initialize edge length variables
+  // Initialize support value variables
   int vidx = 0;
   s_.resize(2 * n_ + 1);
 
@@ -85,6 +85,8 @@ void SofaContext::initialize(const std::vector<Vector> &u_in) {
 
   // Prepare to add default_ineqs_ to ineqs_
   default_ineqs_offset_ = int(ineqs_.size());
+  // Add boundedness constraint
+  add_ineq_(10 * one - s_[2 * n_] >= 0, "b");
   // Add convexity constraints
   for (int i = 0; i <= 2 * n_; i++)
     add_ineq_(
@@ -290,7 +292,7 @@ const Vector &SofaContext::v(int i) const {
 
 QuadraticForm SofaContext::area(const std::vector<int> &pl) const {
   int m = int(pl.size());
-  expect(m >= 2);
+  expect(m >= 1);
   expect(pl.front() == 0);
   expect(pl.back() == 0);
   for (int i = 1; i <= m - 2; i++) {

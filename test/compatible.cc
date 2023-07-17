@@ -16,7 +16,8 @@ TEST_CASE( "Checking compatibility", "[CMP]" ) {
       {QT{5,13}, QT{12,13}}, {QT{497,2545}, QT{2496,2545}}
       }
       );
-  SofaBranchTree t(ctx, 4);
+  SofaBranchTree t(ctx);
+  t.add_corner(4);
   SofaState s = t.valid_states()[0];
   s.update_e({0, 1, 2, 5, -3, 4, -4, 3, -5, -2, -1, 0}); 
   NT a("858413240226912435793494170653955337517692586819527086695188");

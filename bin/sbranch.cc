@@ -58,8 +58,8 @@ void process_angles(Json::Value &angles, unsigned int nthreads) {
 
   // Branching
   SofaContext ctx(gamma);
-  SofaBranchTree t(ctx, bidx[0]);
-  for (int i = 1; i < bidx.size(); i++) {
+  SofaBranchTree t(ctx);
+  for (int i = 0; i < bidx.size(); i++) {
     t.add_corner(bidx[i], true, nthreads);
   }
 

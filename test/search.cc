@@ -18,7 +18,8 @@ TEST_CASE( "Search tree", "[.][SEARCH]" ) {
       }
       );
 
-  SofaBranchTree t(ctx, 4);
+  SofaBranchTree t(ctx);
+  t.add_corner(4);
   std::cout << t.valid_states().size() << std::endl;
   t.add_corner(2);
   std::cout << t.valid_states().size() << std::endl;
