@@ -174,8 +174,8 @@ SofaAreaResult sofa_area_qp(
       const LinearInequality& ineq = (i < m) ?
           ctx.ineq(ineqs[i]) : extra_ineqs[i - m];
       expect(
-          (ineq.r() == CGAL::SMALLER && lambda <= 0) ||
-          (ineq.r() == CGAL::LARGER && lambda >= 0));
+          (ineq.r() == CGAL::SMALLER && lambda >= 0) ||
+          (ineq.r() == CGAL::LARGER && lambda <= 0));
       lambda *= ineq.scale();
       if (lambda < 0)
         lambda = -lambda;
@@ -215,8 +215,8 @@ SofaAreaResult sofa_area_qp(
       const LinearInequality& ineq = (i < m) ?
           ctx.ineq(ineqs[i]) : extra_ineqs[i - m];
       expect(
-          (ineq.r() == CGAL::SMALLER && lambda <= 0) ||
-          (ineq.r() == CGAL::LARGER && lambda >= 0));
+          (ineq.r() == CGAL::SMALLER && lambda >= 0) ||
+          (ineq.r() == CGAL::LARGER && lambda <= 0));
       lambda *= ineq.scale();
       if (lambda < 0)
         lambda = -lambda;
