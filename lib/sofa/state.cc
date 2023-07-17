@@ -133,16 +133,7 @@ bool SofaState::is_compatible(
 
   auto sol = sofa_area_qp(
       ctx.area(e_), ctx, conds_, extra_ineqs);
-  expect(sol.status != CGAL::QP_UNBOUNDED);
-  if (sol.status == CGAL::QP_INFEASIBLE) {
-    return false;
-  }
-  // sol.status == CGAL::QP_OPTIMAL
-  // TODO: change constant
-  if (sol.value < QT(22195, 10000)) {
-    return false;
-  }
-  return true;
+  return bool(sol);
 }
 
 void SofaState::update_() {
@@ -150,13 +141,12 @@ void SofaState::update_() {
     return;
   
   auto sol = sofa_area_qp(ctx.area(e_), ctx, conds_);
-  expect(sol.status != CGAL::QP_UNBOUNDED);
-  if (sol.status == CGAL::QP_INFEASIBLE) {
+  if (!sol) {
     is_valid_ = false;
   } else {
     // sol.status == CGAL::QP_OPTIMAL
-    area_ = sol.value;
-    vars_ = sol.variables;
+    area_ = sol.optimality_proof().max_area;
+    vars_ = sol.optimality_proof().maximizer;
     expect((ctx.area(e_))(vars_) == area_);
     // TODO: change constant
     if (area_ < QT(22195, 10000)) {
