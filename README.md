@@ -31,14 +31,15 @@ or used to cross-check the results of this project.
 
 Install `cmake` and libraries `gmp` and `cgal`. This is
 
-    apt-get install cmake libgmp-dev libcgal-dev
+    brew install cmake gmp cgal catch2
 
-on Ubuntu. Check respective repository for other OS.
+on MacOS. Check respective repository for other OS.
 I found successful compilation under the following versions.
 
 - CGAL 5.5.2
 - GMP 6.2.1\_1
 - CMake 3.26.3
+- Catch2 3.4.0
 
 To build, make and `cd` to the `build` directory and run `cmake ..; make`.
 
