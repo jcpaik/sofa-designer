@@ -116,10 +116,10 @@ TEST_CASE( "Checking exactness of cereal read/write", "[CEREAL]" ) {
   {
     save("ctx.crl", ctx);
     SofaContext cc("ctx.crl");
-    auto v = nonnegative_maximize_quadratic_form(
+    auto v = sofa_area_qp(
         cc.area({0, 1, 2, 5, -3, 4, -4, 3, -5, -2, -1, 0}), 
         cc,
-        cc.default_constraints()).value;
+        cc.default_constraints()).optimality_proof().max_area;
     NT a("858413240226912435793494170653955337517692586819527086695188");
     NT b("347534368299812191344928277446711705522020432192595617308389");
     QT q(a, b);

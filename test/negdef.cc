@@ -7,17 +7,17 @@
 #include "sofa/qp.h"
 
 TEST_CASE( "Checking exactness of is_negative_semidefinite", "[QP]" ) {
-  REQUIRE(is_negative_semidefinite({
+  REQUIRE(bool(is_negative_semidefinite({
         {-1},
         {1, -1},
         {-1, 1, -2}
-        }));
+        })));
 
-  REQUIRE(!is_negative_semidefinite({
+  REQUIRE(!bool(is_negative_semidefinite({
         {1},
         {1, -1},
         {-1, -1, -2}
-        }));
+        })));
 
   SofaContext ctx( {
       {QT{2496,2545}, QT{497,2545}}, 
@@ -28,12 +28,12 @@ TEST_CASE( "Checking exactness of is_negative_semidefinite", "[QP]" ) {
       }
       );
 
-  REQUIRE(is_negative_semidefinite(ctx.area({
+  REQUIRE(bool(is_negative_semidefinite(ctx.area({
           0, 1, 2, 5, -3, 4, -4, 3, -5, -2, -1, 0
-          })));
-  REQUIRE(is_negative_semidefinite(ctx.area({
+          }).w2())));
+  REQUIRE(bool(is_negative_semidefinite(ctx.area({
           0, 4, -4, 0
-          })));
+          }).w2())));
 
   /*
   auto a = ctx.area({
