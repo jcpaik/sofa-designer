@@ -4,6 +4,8 @@
 #include <map>
 #include <iostream>
 #include <utility>
+#include <optional>
+#include <variant>
 
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
