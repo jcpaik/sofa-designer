@@ -5,7 +5,6 @@
 #include "number.h"
 
 class LinearForm;
-class CerealReader;
 
 typedef std::vector< std::vector<QT> > QTMatrix;
 
@@ -55,10 +54,6 @@ class QuadraticForm {
 
     // Substitution
     QT operator()(std::vector<QT> values) const;
-
-    // Serialization
-    // Only this function can change the dimension d()
-    friend CerealReader &operator>>(CerealReader &in, QuadraticForm &v);
 
   private:
     int d_;

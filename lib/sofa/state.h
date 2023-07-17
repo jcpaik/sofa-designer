@@ -10,8 +10,6 @@
 #include "context.h"
 #include "qp.h"
 
-class CerealWriter;
-class CerealReader;
 class SofaBranchTree;
 
 class SofaState {
@@ -53,12 +51,6 @@ class SofaState {
     bool is_compatible(const LinearInequality &extra_ineq) const;
     bool is_compatible(const std::vector<LinearInequality> &extra_ineqs) const;
 
-    // Read/write
-    // Does not store/load context information
-    friend CerealWriter &operator<<(CerealWriter &out, const SofaState &v);
-    friend CerealReader &operator>>(CerealReader &in, SofaState &v);
-    friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
-
     Json::Value json();
     
   private:
@@ -66,10 +58,6 @@ class SofaState {
 
     // Constructors
     SofaState(SofaBranchTree &tree, int i);
-    // Read from a file
-    explicit SofaState(SofaBranchTree &tree, const char *file);
-    // Read from a stream
-    explicit SofaState(SofaBranchTree &tree, CerealReader &reader);
 
     int id_;
 

@@ -3,15 +3,10 @@
 #include <string>
 
 #include "expect.h"
-#include "cereal.h"
 #include "json.h"
 
 SofaContext::SofaContext(const std::vector<Vector> &u) {
   initialize(u);
-}
-
-SofaContext::SofaContext(const char *file) {
-  load(file, *this);
 }
 
 void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &name) {
