@@ -33,14 +33,8 @@ class SofaState {
     SofaState &operator=(SofaState &&other) = delete;
 
     bool is_valid() const;
-    QT area();
-    std::vector<QT> vars();
-    void impose(SofaConstraintProbe cond);
-    void impose(const SofaConstraints &cond);
-
-    // Impose condition `ineq` to current state
-    // and return a new SofaState with the opposite of ineq imposed
-    SofaState split(SofaConstraintProbe cond);
+    QT area() const;
+    std::vector<QT> vars() const;
 
     // Accessors to polyline constructs
     const std::vector<int> &e() const;
@@ -48,6 +42,12 @@ class SofaState {
     const LinearFormPoint &p(int i) const;
     Vector v(int i) const;
 
+    // Only these methods change the state of the node
+    void impose(SofaConstraintProbe cond);
+    void impose(const SofaConstraints &cond);
+    // Impose condition `ineq` to current state
+    // and return a new SofaState with the opposite of ineq imposed
+    SofaState split(SofaConstraintProbe cond);
     // Update polyline
     void update_e(const std::vector<int> &e);
 
@@ -56,7 +56,7 @@ class SofaState {
     SofaAreaResult is_compatible(
       const std::vector<LinearInequality> &extra_ineqs) const;
 
-    Json::Value json();
+    Json::Value json() const;
     
   private:
     friend class SofaBranchTree;
@@ -69,15 +69,13 @@ class SofaState {
     std::vector<int> e_; 
     SofaConstraints conds_;
 
+    // If state is invalid, contains a correct proof of invalidity
+    // If valid, `area_result_` may not contain a correct proof of optimality
+    // but `area_` and `vars_` always contain a valid assignment
     SofaAreaResult area_result_;
-    // A set of valid variables var_ and its corresponding area area_
-    // It is NOT guaranteed that these attain the maximum area
-    // These are not a part of serialized/unserialized members
-    // When loaded, just call update_
     QT area_;
     std::vector<QT> vars_; 
 
-    // Internally update area_ and var_ from given conditions 
-    // Updated values are maximized area 
+    // Called if and only if the state changes its value
     void update_();
 };

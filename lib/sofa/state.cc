@@ -22,27 +22,27 @@ SofaState::SofaState(const SofaState &s)
       conds_(s.conds_), 
       area_(s.area_), 
       vars_(s.vars_),
-      id_(s.id_) {
+      id_(s.id_),
+      area_result_(s.area_result_) {
 }
 
 bool SofaState::is_valid() const { 
   return bool(area_result_);
 }
 
-QT SofaState::area() { 
-  update_();
+QT SofaState::area() const { 
   return area_; 
 }
 
-std::vector<QT> SofaState::vars() { 
-  update_();
+std::vector<QT> SofaState::vars() const { 
   return vars_; 
 }
 
 void SofaState::impose(SofaConstraintProbe cond) {
   if (is_valid()) {
     conds_.push_back(cond);
-    if (!ctx.ineq(cond)(vars_)) // Optimization logic
+    // Update only when current solution becomes invalid
+    if (!ctx.ineq(cond)(vars_))
       update_();
   }
 }
@@ -55,6 +55,7 @@ void SofaState::impose(const SofaConstraints &conds) {
       if (skip_update && !ctx.ineq(cond)(vars_))
         skip_update = false;
     }
+    // Update only when current solution becomes invalid
     if (!skip_update)
       update_();
   }
@@ -122,12 +123,8 @@ SofaAreaResult SofaState::is_compatible(
 }
 
 void SofaState::update_() {
-  if (!is_valid())
-    return;
-  
   area_result_ = sofa_area_qp(ctx.area(e_), ctx, conds_);
   if (area_result_) {
-    // sol.status == CGAL::QP_OPTIMAL
     area_ = area_result_.optimality_proof().max_area;
     vars_ = area_result_.optimality_proof().maximizer;
     expect((ctx.area(e_))(vars_) == area_);
