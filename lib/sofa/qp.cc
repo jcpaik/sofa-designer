@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 #include "expect.h"
+#include "json.h"
 
 std::optional<CholeskyLDL> is_negative_semidefinite(const QTMatrix &mat) {
   // Cholesky decomposition
@@ -53,10 +55,7 @@ std::optional<CholeskyLDL> is_negative_semidefinite(const QTMatrix &mat) {
   // `a` is a certificate with permutation vector perm
   // row [i] of mat is in row[perm[i]] of a
   for (int i = 0; i < n; i++) {
-    // int pi = perm[i];
     for (int j = 0; j <= i; j++) {
-      // int pj = perm[j];
-      // checks mat[i][j]
       QT tot = 0;
       for (int k = 0; k <= i && k <= j; k++)
         tot -= a[i][k] * a[j][k] * d[k];
@@ -65,6 +64,37 @@ std::optional<CholeskyLDL> is_negative_semidefinite(const QTMatrix &mat) {
   }
 
   return {{a, d}};
+}
+
+Json::Value SofaAreaOptimalityProof::json() const {
+  Json::Value res(Json::objectValue);
+
+  res["max_area"] = to_json(max_area);
+  res["maximizer"] = to_json(maximizer);
+  res["quad_l"] = to_json(l);
+  res["quad_d"] = to_json(d);
+
+  auto &res_lambdas = res["lambdas"];
+  for (auto const &[ineq, lambda] : lambdas) {
+    res_lambdas[std::to_string(ineq)] = to_json(lambda);
+  }
+  for (auto const &[ineq, lambda] : lambdas_extra) {
+    res_lambdas["extra" + std::to_string(ineq)] = to_json(lambda);
+  }
+
+  return res;
+}
+
+Json::Value SofaAreaInvalidityProof::json() const {
+  Json::Value res(Json::objectValue);
+  for (auto const &[ineq, lambda] : lambdas) {
+    res[std::to_string(ineq)] = to_json(lambda);
+  }
+  for (auto const &[ineq, lambda] : lambdas_extra) {
+    res["extra" + std::to_string(ineq)] = to_json(lambda);
+  }
+
+  return res;
 }
 
 SofaAreaResult sofa_area_qp(
