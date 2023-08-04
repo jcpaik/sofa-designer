@@ -33,8 +33,6 @@ class SofaState {
     SofaState &operator=(SofaState &&other) = delete;
 
     bool is_valid() const;
-    QT area() const;
-    std::vector<QT> vars() const;
 
     // Accessors to polyline constructs
     const std::vector<int> &e() const;
@@ -50,6 +48,10 @@ class SofaState {
     SofaState split(SofaConstraintProbe cond);
     // Update polyline
     void update_e(const std::vector<int> &e);
+
+    // Guaranteed maximum area and maximizer
+    QT area();
+    std::vector<QT> vars();
 
     SofaAreaResult is_compatible(
       const LinearInequality &extra_ineq) const;

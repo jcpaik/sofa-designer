@@ -30,11 +30,15 @@ bool SofaState::is_valid() const {
   return bool(area_result_);
 }
 
-QT SofaState::area() const { 
+QT SofaState::area() { 
+  expect(is_valid());
+  update_();
   return area_; 
 }
 
-std::vector<QT> SofaState::vars() const { 
+std::vector<QT> SofaState::vars() { 
+  expect(is_valid());
+  update_();
   return vars_; 
 }
 
@@ -108,7 +112,7 @@ void SofaState::update_e(const std::vector<int> &e) {
 }
 
 SofaAreaResult SofaState::is_compatible(const LinearInequality &extra_ineq) const {
-  return is_compatible({extra_ineq});
+  return is_compatible(std::vector<LinearInequality>{extra_ineq});
 }
 
 SofaAreaResult SofaState::is_compatible(
