@@ -9,7 +9,6 @@
 SofaState::SofaState(SofaBranchTree &tree)
     : ctx(tree.ctx),
       tree(tree), 
-      is_valid_(true), 
       e_({0}), 
       conds_(ctx.default_constraints()),
       id_(0) {
@@ -19,7 +18,6 @@ SofaState::SofaState(SofaBranchTree &tree)
 SofaState::SofaState(const SofaState &s)
     : ctx(s.ctx), 
       tree(s.tree),
-      is_valid_(s.is_valid_),
       e_(s.e_), 
       conds_(s.conds_), 
       area_(s.area_), 
@@ -28,7 +26,7 @@ SofaState::SofaState(const SofaState &s)
 }
 
 bool SofaState::is_valid() const { 
-  return is_valid_;
+  return bool(area_result_);
 }
 
 QT SofaState::area() { 
@@ -42,7 +40,7 @@ std::vector<QT> SofaState::vars() {
 }
 
 void SofaState::impose(SofaConstraintProbe cond) {
-  if (is_valid_) {
+  if (is_valid()) {
     conds_.push_back(cond);
     if (!ctx.ineq(cond)(vars_)) // Optimization logic
       update_();
@@ -50,7 +48,7 @@ void SofaState::impose(SofaConstraintProbe cond) {
 }
 
 void SofaState::impose(const SofaConstraints &conds) {
-  if (is_valid_) {
+  if (is_valid()) {
     bool skip_update = true;
     for (const auto &cond : conds) {
       conds_.push_back(cond);
@@ -63,7 +61,7 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
-  expect(is_valid_);
+  expect(is_valid());
 
   int parent_id = this->id_;
   int child_left_id = tree.new_state_id_();
@@ -98,7 +96,7 @@ Vector SofaState::v(int i) const {
 }
 
 void SofaState::update_e(const std::vector<int> &e) {
-  if (is_valid_) {
+  if (is_valid()) {
     e_ = e;
     auto narea = (ctx.area(e_))(vars_);
     expect(area_ >= narea);
@@ -108,42 +106,34 @@ void SofaState::update_e(const std::vector<int> &e) {
   }
 }
 
-bool SofaState::is_compatible(const LinearInequality &extra_ineq) const {
-  std::vector<LinearInequality> extra_ineqs(1, extra_ineq);
-  bool res = is_compatible(extra_ineqs);
-  return res;
+SofaAreaResult SofaState::is_compatible(const LinearInequality &extra_ineq) const {
+  return is_compatible({extra_ineq});
 }
 
-bool SofaState::is_compatible(
+SofaAreaResult SofaState::is_compatible(
     const std::vector<LinearInequality> &extra_ineqs) const {
-  if (!is_valid_)
-    return false; // If not valid, it's incompatible with any condition
+  // node already invalid by itself
+  if (!is_valid())
+    return area_result_;
 
   auto sol = sofa_area_qp(
       ctx.area(e_), ctx, conds_, extra_ineqs);
-  return bool(sol);
+  return sol;
 }
 
 void SofaState::update_() {
-  if (!is_valid_)
+  if (!is_valid())
     return;
   
-  auto sol = sofa_area_qp(ctx.area(e_), ctx, conds_);
-  if (!sol) {
-    is_valid_ = false;
-  } else {
+  area_result_ = sofa_area_qp(ctx.area(e_), ctx, conds_);
+  if (area_result_) {
     // sol.status == CGAL::QP_OPTIMAL
-    area_ = sol.optimality_proof().max_area;
-    vars_ = sol.optimality_proof().maximizer;
+    area_ = area_result_.optimality_proof().max_area;
+    vars_ = area_result_.optimality_proof().maximizer;
     expect((ctx.area(e_))(vars_) == area_);
-    // TODO: change constant
-    if (area_ < QT(22195, 10000)) {
-      is_valid_ = false;
-    }
-  }
-
-  // state turned into invalid one
-  if (!is_valid_) {
+    expect(area_ > QT(22195, 10000));
+  } else {
+    // state turned from valid to invalid
     tree.invalid_states_.push_back(*this);
   }
 }

@@ -12,6 +12,10 @@
 
 class SofaBranchTree;
 
+// Invariants: 
+// - Constraints are only added, never subtracted
+// - Updated area function (update_e) is monotonically smaller than
+//   the previous function
 class SofaState {
   public:
     // The context the state depends on
@@ -47,9 +51,10 @@ class SofaState {
     // Update polyline
     void update_e(const std::vector<int> &e);
 
-    // Check compatibility of current sofa with given inequality
-    bool is_compatible(const LinearInequality &extra_ineq) const;
-    bool is_compatible(const std::vector<LinearInequality> &extra_ineqs) const;
+    SofaAreaResult is_compatible(
+      const LinearInequality &extra_ineq) const;
+    SofaAreaResult is_compatible(
+      const std::vector<LinearInequality> &extra_ineqs) const;
 
     Json::Value json();
     
@@ -61,10 +66,10 @@ class SofaState {
 
     int id_;
 
-    bool is_valid_;
     std::vector<int> e_; 
     SofaConstraints conds_;
 
+    SofaAreaResult area_result_;
     // A set of valid variables var_ and its corresponding area area_
     // It is NOT guaranteed that these attain the maximum area
     // These are not a part of serialized/unserialized members
