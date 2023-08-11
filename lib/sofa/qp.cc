@@ -71,8 +71,8 @@ Json::Value SofaAreaOptimalityProof::json() const {
 
   res["max_area"] = to_json(max_area);
   res["maximizer"] = to_json(maximizer);
-  res["quad_l"] = to_json(l);
-  res["quad_d"] = to_json(d);
+  res["quadratic_l"] = to_json(l);
+  res["quadratic_d"] = to_json(d);
 
   auto &res_lambdas = res["lambdas"];
   for (auto const &[ineq, lambda] : lambdas) {
