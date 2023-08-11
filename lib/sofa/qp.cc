@@ -97,6 +97,18 @@ Json::Value SofaAreaInvalidityProof::json() const {
   return res;
 }
 
+Json::Value SofaAreaResult::json() const {
+  if (is_optimal()) {
+    Json::Value res = optimality_proof().json();
+    res["type"] = "optimal";
+    return res;
+  } else {
+    Json::Value res = invalidity_proof().json();
+    res["type"] = "invalid";
+    return res;
+  }
+}
+
 SofaAreaResult sofa_area_qp(
     const QuadraticForm &q, 
     const SofaContext &ctx,

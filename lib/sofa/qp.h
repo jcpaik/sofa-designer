@@ -61,6 +61,8 @@ struct SofaAreaResult {
   const SofaAreaInvalidityProof& invalidity_proof() const {
     return std::get<SofaAreaInvalidityProof>(result);
   }
+
+  Json::Value json() const;
 };
 
 SofaAreaResult sofa_area_qp(
