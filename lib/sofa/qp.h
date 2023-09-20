@@ -9,6 +9,7 @@
 
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
+#include <json/json.h>
 
 #include "number.h"
 #include "forms.h"
@@ -30,11 +31,15 @@ struct SofaAreaOptimalityProof {
   std::vector<QT> d;
   std::map<SofaConstraintProbe, QT> lambdas;
   std::map<int, QT> lambdas_extra;
+
+  Json::Value json() const;
 };
 
 struct SofaAreaInvalidityProof {
   std::map<SofaConstraintProbe, QT> lambdas;
   std::map<int, QT> lambdas_extra;
+
+  Json::Value json() const;
 };
 
 struct SofaAreaResult {
@@ -56,6 +61,8 @@ struct SofaAreaResult {
   const SofaAreaInvalidityProof& invalidity_proof() const {
     return std::get<SofaAreaInvalidityProof>(result);
   }
+
+  Json::Value json() const;
 };
 
 SofaAreaResult sofa_area_qp(
