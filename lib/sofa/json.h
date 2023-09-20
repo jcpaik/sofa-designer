@@ -9,6 +9,10 @@
 #include "expect.h"
 #include "number.h"
 
+inline Json::Value to_json(const int &n) {
+  return n;
+}
+
 inline Json::Value to_json(const NT &n) {
   return n.get_str();
 }

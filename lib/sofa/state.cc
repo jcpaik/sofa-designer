@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "json.h"
 #include "expect.h"
 #include "branch_tree.h"
 #include "qp.h"
@@ -124,6 +125,24 @@ SofaAreaResult SofaState::is_compatible(
   auto sol = sofa_area_qp(
       ctx.area(e_), ctx, conds_, extra_ineqs);
   return sol;
+}
+
+Json::Value SofaState::json() const {
+  Json::Value res(Json::objectValue);
+  res["niche"] = to_json(e());
+  res["constraints"] = to_json(conds_);
+  // TODO: add proof that this e is valid from constraints
+
+  // TODO: 'valid' here means that the max area is > 2.2195
+  // 'invalid' in sofa optimization result means that the constraints are contradictory 
+  if (is_valid()) {
+    res["valid"] = true;
+  } else {
+    res["valid"] = false;
+    res["invalidity_proof"] = area_result_.json();
+  }
+
+  return res;
 }
 
 void SofaState::update_() {
