@@ -12,7 +12,6 @@ namespace po = boost::program_options;
 #include "sofa/context.h"
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
-#include "sofa/cereal.h"
 #include "parse.h"
 
 int main(int argc, char* argv[]) {
