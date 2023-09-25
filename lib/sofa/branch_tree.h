@@ -27,14 +27,18 @@ struct SplitState {
       child_right_id(child_right_id) {}
 };
 
+// TODO: the words 'state' and 'node' are used in mixed ways 
+
 class SofaBranchTree {
   public:
     const SofaContext &ctx;
 
     // Tree with initial search
     SofaBranchTree(const SofaContext &ctx);
-    // TODO: Tree from a pre-computed root
-    SofaBranchTree(const SofaState &root);
+    // Load from saved file
+    SofaBranchTree(const SofaContext &ctx,
+      const Json::Value &split_nodes,
+      const std::vector<SofaState> &valid_states);
 
     // Not default-initializable. Not assignable.
     SofaBranchTree() = delete;
@@ -49,6 +53,8 @@ class SofaBranchTree {
 
     // TODO: Sets tqdm visibility
     void show_tqdm(bool flag);
+
+    Json::Value split_nodes() const;
 
   private:
     int n;

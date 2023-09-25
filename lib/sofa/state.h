@@ -65,6 +65,8 @@ class SofaState {
 
     // Constructors
     SofaState(SofaBranchTree &tree);
+    // construct state from json
+    SofaState(SofaBranchTree &tree, const Json::Value &json);
 
     int id_;
 
