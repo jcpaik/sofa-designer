@@ -5,11 +5,10 @@
 #include <tuple>
 #include <vector>
 
-#include <json/json.h>
-
 #include "number.h"
 #include "forms.h"
 #include "ineq.h"
+#include "json.h"
 #include "geom.h"
 
 using SofaConstraintProbe = int;
@@ -23,6 +22,7 @@ class SofaContext {
     //    The vectors corresponding to (0, 1) and (1, 0) are skipped,
     //    so n = u.size() + 1.
     SofaContext(const std::vector<Vector> &u);
+    SofaContext(const Json::Value &u);
 
     // Does the same thing as constructor, replacing the original context
     void initialize(const std::vector<Vector> &u);

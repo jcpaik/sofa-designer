@@ -35,15 +35,10 @@ void process_angles(Json::Value &angles, unsigned int nthreads) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
   
-  std::vector<Vector> gamma;
   std::vector< std::pair<int, int> > order_pair;
 
   for (int i = 0; i < angles.size(); i++) {
     const auto &angle = angles[i];
-    gamma.emplace_back(
-      rational(angle["cos"].asString()),
-      rational(angle["sin"].asString()));
-
     int order = angle["branch_order"].asInt();
     if (order < 0)
       continue;
@@ -57,7 +52,7 @@ void process_angles(Json::Value &angles, unsigned int nthreads) {
     bidx[i] = order_pair[i].second;
 
   // Branching
-  SofaContext ctx(gamma);
+  SofaContext ctx(angles);
   SofaBranchTree t(ctx);
   for (int i = 0; i < bidx.size(); i++) {
     t.add_corner(bidx[i], true, nthreads);
