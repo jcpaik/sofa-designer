@@ -59,6 +59,19 @@ void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
   expect(split_states_.size() + 1 == valid_states_.size() + invalid_states_.size());
 }
 
+Json::Value SofaBranchTree::split_nodes() const {
+  Json::Value res;
+
+  for (auto const &split : split_states_) {
+    auto &val = res["N" + std::to_string(split.id)];
+    val["split_by"] = split.split_by;
+    val["left"] = "N" + std::to_string(split.child_left_id);
+    val["right"] = "N" + std::to_string(split.child_right_id);
+  }
+
+  return res;
+}
+
 int SofaBranchTree::new_state_id_() {
   std::lock_guard<std::mutex> guard(lock_);
   last_state_id_++;
