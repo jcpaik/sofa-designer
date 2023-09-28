@@ -72,6 +72,17 @@ Json::Value SofaBranchTree::split_nodes() const {
   return res;
 }
 
+Json::Value SofaBranchTree::leaf_nodes() const {
+  Json::Value res;
+
+  for (auto const &leaf : valid_states_) {
+    auto &val = res["N" + std::to_string(leaf.id_)];
+    val = leaf.json();
+  }
+
+  return res;
+}
+
 int SofaBranchTree::new_state_id_() {
   std::lock_guard<std::mutex> guard(lock_);
   last_state_id_++;

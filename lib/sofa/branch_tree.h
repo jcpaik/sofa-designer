@@ -38,7 +38,7 @@ class SofaBranchTree {
     // Load from saved file
     SofaBranchTree(const SofaContext &ctx,
       const Json::Value &split_nodes,
-      const std::vector<SofaState> &valid_states);
+      const Json::Value &leaf_nodes);
 
     // Not default-initializable. Not assignable.
     SofaBranchTree() = delete;
@@ -55,6 +55,7 @@ class SofaBranchTree {
     void show_tqdm(bool flag);
 
     Json::Value split_nodes() const;
+    Json::Value leaf_nodes() const;
 
   private:
     int n;
