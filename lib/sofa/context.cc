@@ -3,10 +3,22 @@
 #include <string>
 
 #include "expect.h"
-#include "json.h"
 
 SofaContext::SofaContext(const std::vector<Vector> &u) {
   initialize(u);
+}
+
+SofaContext::SofaContext(const Json::Value &angles) {
+  std::vector<Vector> gamma;
+
+  for (int i = 0; i < angles.size(); i++) {
+    const auto &angle = angles[i];
+    gamma.emplace_back(
+      qt_from_json(angle["cos"]),
+      qt_from_json(angle["sin"]));
+  }
+
+  initialize(gamma);
 }
 
 void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &name) {

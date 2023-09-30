@@ -11,6 +11,7 @@ namespace po = boost::program_options;
 #include <stdexcept>
 #include <algorithm>
 #include <utility>
+#include <filesystem>
 
 #include "sofa/context.h"
 #include "sofa/geom.h"
@@ -31,19 +32,17 @@ QT rational(const std::string &s) {
   return res;
 }
 
-void process_angles(Json::Value &angles, unsigned int nthreads) {
+void process_angles(
+    Json::Value &angles,
+    unsigned int nthreads,
+    const std::string &out) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
   
-  std::vector<Vector> gamma;
   std::vector< std::pair<int, int> > order_pair;
 
   for (int i = 0; i < angles.size(); i++) {
     const auto &angle = angles[i];
-    gamma.emplace_back(
-      rational(angle["cos"].asString()),
-      rational(angle["sin"].asString()));
-
     int order = angle["branch_order"].asInt();
     if (order < 0)
       continue;
@@ -57,7 +56,7 @@ void process_angles(Json::Value &angles, unsigned int nthreads) {
     bidx[i] = order_pair[i].second;
 
   // Branching
-  SofaContext ctx(gamma);
+  SofaContext ctx(angles);
   SofaBranchTree t(ctx);
   for (int i = 0; i < bidx.size(); i++) {
     t.add_corner(bidx[i], true, nthreads);
@@ -72,11 +71,47 @@ void process_angles(Json::Value &angles, unsigned int nthreads) {
   }
   std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
   std::cout << "Area: " << marea << std::endl;
+
+  // If output directory is specified, export the json files
+  if (!out.empty()) {
+    std::filesystem::path fp(out);
+
+    if (std::filesystem::exists(fp)) {
+      std::cout << "Warning: the output directory already exists!" << std::endl;
+    }
+
+    std::filesystem::create_directory(fp);
+
+    // Write the files
+    { 
+      std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
+      angles_f << angles;
+      angles_f.close();
+    }
+
+    {
+      std::ofstream split_values_f(fp / std::filesystem::path("split-values.json"));
+      split_values_f << ctx.split_values();
+      split_values_f.close();
+    }
+
+    {
+      std::ofstream split_nodes_f(fp / std::filesystem::path("split-nodes.json"));
+      split_nodes_f << t.split_nodes();
+      split_nodes_f.close();
+    }
+
+    {
+      std::ofstream leaf_nodes_f(fp / std::filesystem::path("leaf-nodes.json"));
+      leaf_nodes_f << t.leaf_nodes();
+      leaf_nodes_f.close();
+    }
+  }
 }
 
 int main(int argc, char* argv[]) {
   try {
-    std::string angles;
+    std::string angles, out;
     unsigned int nthreads = 1;
 
     // Set up syntax for arguments
@@ -84,6 +119,8 @@ int main(int argc, char* argv[]) {
     desc.add_options()
       ("help", "Produce help message")
       ("angles", po::value<std::string>(&angles), "Required angle partition")
+      ("out", po::value<std::string>(&out)->implicit_value(""),
+         "Directory for output (optional)\n")
       ("nthreads", po::value<unsigned int>(&nthreads)->implicit_value(1),
          "Number of threads to use (optional)\n"
          "Note that the output is not deterministic "
@@ -116,7 +153,7 @@ int main(int argc, char* argv[]) {
     std::ifstream inp(angles);
     Json::Value angles_json;
     inp >> angles_json;
-    process_angles(angles_json, nthreads);
+    process_angles(angles_json, nthreads, out);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
