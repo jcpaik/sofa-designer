@@ -10,7 +10,7 @@
 #include "branch_logic.h"
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx)
-    : ctx(ctx), n(ctx.n()) {
+    : ctx(ctx), n(ctx.n()), last_state_id_(0) {
   valid_states_.push_back(SofaState(*this));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
@@ -76,6 +76,11 @@ Json::Value SofaBranchTree::leaf_nodes() const {
   Json::Value res;
 
   for (auto const &leaf : valid_states_) {
+    auto &val = res["N" + std::to_string(leaf.id_)];
+    val = leaf.json();
+  }
+
+  for (auto const &leaf : invalid_states_) {
     auto &val = res["N" + std::to_string(leaf.id_)];
     val = leaf.json();
   }
