@@ -36,9 +36,10 @@ class SofaBranchTree {
     // Tree with initial search
     SofaBranchTree(const SofaContext &ctx);
     // Load from saved file
-    SofaBranchTree(const SofaContext &ctx,
-      const Json::Value &split_nodes,
-      const Json::Value &leaf_nodes);
+    SofaBranchTree(
+        const SofaContext &ctx,
+        const Json::Value &split_nodes,
+        const Json::Value &leaf_nodes);
 
     // Not default-initializable. Not assignable.
     SofaBranchTree() = delete;

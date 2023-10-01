@@ -16,6 +16,20 @@ SofaBranchTree::SofaBranchTree(const SofaContext &ctx)
   // std::cout << valid_states_.back().area() << std::endl;
 }
 
+SofaBranchTree::SofaBranchTree(
+    const SofaContext &ctx,
+    const Json::Value &split_nodes,
+    const Json::Value &leaf_nodes)
+    : ctx(ctx), n(ctx.n()), last_state_id_(0) {
+  // don't update split_nodes
+  // don't keep track of last ID
+
+  for (const auto &leaf : leaf_nodes) {
+    // added to tree as generated
+    SofaState state(*this, leaf);
+  }
+}
+
 const std::vector<SofaState> &SofaBranchTree::valid_states() const {
   return valid_states_;
 }
