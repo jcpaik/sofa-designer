@@ -51,3 +51,13 @@ inline std::vector<QT> qts_from_json(Json::Value arr) {
   }
   return ret;
 }
+
+inline std::vector<int> ints_from_json(Json::Value arr) {
+  expect(arr.type() == Json::arrayValue);
+  size_t n = arr.size();
+  std::vector<int> ret(n);
+  for (int i = 0; i < n; i++) {
+    ret[i] = arr[i].asInt();
+  }
+  return ret;
+}

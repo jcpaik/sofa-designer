@@ -74,5 +74,6 @@ class SofaBranchTree {
     std::vector<SplitState> split_states_;
 
     friend SofaState SofaState::split(SofaConstraintProbe cond);
+    friend SofaState::SofaState(SofaBranchTree &tree, const Json::Value &json);
     friend void SofaState::update_();
 };
