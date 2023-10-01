@@ -129,6 +129,7 @@ SofaAreaResult SofaState::is_compatible(
 
 Json::Value SofaState::json() const {
   Json::Value res(Json::objectValue);
+  res["id"] = id_;
   res["niche"] = to_json(e());
   res["constraints"] = to_json(conds_);
   // TODO: add proof that this e is valid from constraints
@@ -143,6 +144,14 @@ Json::Value SofaState::json() const {
   }
 
   return res;
+}
+
+SofaState::SofaState(SofaBranchTree &tree, const Json::Value &json) : 
+    ctx(tree.ctx), tree(tree), e_(ints_from_json(json["niche"])), 
+    conds_(ints_from_json(json["constraints"])), id_(json["id"].asInt()) {
+  update_();
+  if (is_valid())
+    tree.valid_states_.push_back(*this);
 }
 
 void SofaState::update_() {

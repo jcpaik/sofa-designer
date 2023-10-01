@@ -4,7 +4,7 @@
 #include <vector>
 #include <sstream>
 
-#include <json/json.h>
+#include "json/json.h"
 
 #include "expect.h"
 #include "number.h"
@@ -48,6 +48,16 @@ inline std::vector<QT> qts_from_json(Json::Value arr) {
   std::vector<QT> ret(n);
   for (int i = 0; i < n; i++) {
     ret[i] = qt_from_json(arr[i]);
+  }
+  return ret;
+}
+
+inline std::vector<int> ints_from_json(Json::Value arr) {
+  expect(arr.type() == Json::arrayValue);
+  size_t n = arr.size();
+  std::vector<int> ret(n);
+  for (int i = 0; i < n; i++) {
+    ret[i] = arr[i].asInt();
   }
   return ret;
 }
