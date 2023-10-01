@@ -9,6 +9,8 @@ typedef mpz_class NT;
 
 template<> inline void CGAL::simplify_quotient<NT>(NT &a, NT &b) {
   NT g = gcd(a, b);
+  if (b < 0)
+    g = -g;
   a /= g; b /= g;
 }
 
