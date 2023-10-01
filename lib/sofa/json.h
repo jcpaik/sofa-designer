@@ -4,7 +4,7 @@
 #include <vector>
 #include <sstream>
 
-#include <json/json.h>
+#include "json/json.h"
 
 #include "expect.h"
 #include "number.h"
