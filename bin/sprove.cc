@@ -5,6 +5,7 @@ namespace po = boost::program_options;
 #include <iterator>
 #include <istream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -12,9 +13,10 @@ namespace po = boost::program_options;
 #include "sofa/context.h"
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
+#include "sofa/json.h"
 #include "parse.h"
 
-int main(int argc, char* argv[]) {
+/*
   SofaContext ctx({
       {QT{12,13},QT{5,13}},
       {QT{4,5},QT{3,5}},
@@ -28,6 +30,106 @@ int main(int argc, char* argv[]) {
   for (int i = 1; i < ctx.n(); i++) {
     auto res = p.parse_expr(std::string("dot(A(0)-p(0,-")+std::to_string(i)+"),u(0))");
     assert (res == dot(ctx.u(1), ctx.A(0) - ctx.p(0, i)));
+  }
+*/
+
+void find_lb(const SofaContext &tree, QT lb, QT ub, int bsearch_depth) {
+  QT res = ub;
+  tqdm bar;
+  int c = 0, n = t.valid_states().size();
+  for (const auto &v : t.valid_states()) {
+    bar.progress(c++, n); 
+    bar.set_label(qt_to_str(res));
+    
+    if (is_lb_true(v, target, res))
+      continue;
+
+    QT clb = lb, cub = ub;
+    for (int i = 0; i < bsearch_depth; i++) {
+      QT md = (clb + cub) / 2;
+      if (is_lb_true(v, target, md))
+        clb = md;
+      else
+        cub = md;
+    }
+
+    assert(res > clb);
+    res = clb;
+  }
+  bar.finish();
+  return res;
+}
+
+void run(const std::string &treedir, const std::string &ineq, 
+    QT lb, QT ub, const std::string &out) {
+  std::filesystem::path treep(treedir);
+  if (!std::filesystem::is_directory(treep)) {
+    throw std::runtime_error("The tree directory does not exist");
+  }
+  
+  Json::Value angles;
+  {
+    std::ifstream angles_f(treep / std::filesystem::path("angles.json"));
+    angles_f >> angles;
+    angles_f.close();
+  }
+  SofaContext ctx(angles);
+
+  Json::Value leaf_nodes;
+  {
+    std::ifstream leaf_nodes_f(treep / std::filesystem::path("leaf-nodes.json"));
+    leaf_nodes_f >> leaf_nodes;
+    leaf_nodes_f.close();
+  }
+  SofaBranchTree tree(ctx, Json::Value(false), leaf_nodes);
+
+  Parser parser(ctx);
+  auto val = parser.parse_expr(ineq);
+
+  find_lb(tree, val, out);
+}
+
+int main(int argc, char* argv[]) {
+  try {
+    std::string tree, ineq, lb_str, ub_str, out;
+
+    // Set up syntax for arguments
+    po::options_description desc("Allowed options");
+    desc.add_options()
+      ("help", "Produce help message")
+      ("tree", po::value<std::string>(&tree), "Required tree output directory of sbranch")
+      ("ineq", po::value<std::string>(&ineq), "Required inequality in string form")
+      ("lb", po::value<std::string>(&lb_str), "Required inequality in string form")
+      ("ub", po::value<std::string>(&ub_str), "Required inequality in string form")
+      ("out", po::value<std::string>(&out)->implicit_value(""),
+         "Directory for proof output (optional)\n")
+      ;
+
+    po::positional_options_description p;
+    p.add("tree", 1);
+    p.add("ineq", 1);
+    p.add("lb", 1);
+    p.add("ub", 1);
+
+    // Parse arguments
+    po::variables_map vm;        
+    po::store(po::command_line_parser(argc, argv).
+              options(desc).positional(p).run(), vm);
+    po::notify(vm);    
+
+    // Logic
+    if (vm.count("help")) {
+      std::cout << desc << "\n";
+      return 0;
+    }
+
+    run(tree, ineq, stoq(lb_str), stoq(ub_str), out);
+  } catch(std::exception& e) {
+    std::cerr << "error: " << e.what() << "\n";
+    return 1;
+  } catch(...) {
+    std::cerr << "Exception of unknown type!\n";
+    return 1;
   }
 
   return 0;
