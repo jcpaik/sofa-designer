@@ -31,6 +31,14 @@ bool SofaState::is_valid() const {
   return bool(area_result_);
 }
 
+int SofaState::id() const {
+  return id_;
+}
+
+std::string SofaState::id_string() const {
+  return "N" + std::to_string(id_);
+}
+
 QT SofaState::area() { 
   expect(is_valid());
   update_();

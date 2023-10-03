@@ -34,6 +34,8 @@ class SofaState {
 
     bool is_valid() const;
 
+    int id() const;
+    std::string id_string() const;
     // Accessors to polyline constructs
     const std::vector<int> &e() const;
     int e(int i) const;

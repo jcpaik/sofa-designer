@@ -15,6 +15,7 @@ namespace po = boost::program_options;
 #include "sofa/branch_tree.h"
 #include "sofa/json.h"
 #include "parse.h"
+#include "tqdm.h"
 
 /*
   SofaContext ctx({
@@ -33,31 +34,51 @@ namespace po = boost::program_options;
   }
 */
 
-void find_lb(const SofaContext &tree, QT lb, QT ub, int bsearch_depth) {
+bool report_incompatible(
+    const SofaState &v,
+    const LinearInequality &ineq,
+    Json::Value &sink) {
+  auto res = v.is_compatible(ineq);
+  if (!res) {
+    auto &target = sink["N" + std::to_string(v.id())];
+    target = res.json();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void find_lb(
+    const SofaBranchTree &tree, 
+    const LinearForm &val,
+    QT lb, QT ub, int bsearch_depth,
+    std::ofstream &out) {
+
+  Json::Value output;
   QT res = ub;
   tqdm bar;
-  int c = 0, n = t.valid_states().size();
-  for (const auto &v : t.valid_states()) {
+  int c = 0, n = tree.valid_states().size();
+  for (const auto &v : tree.valid_states()) {
     bar.progress(c++, n); 
-    bar.set_label(qt_to_str(res));
+    bar.set_label(to_json(res).asString());
     
-    if (is_lb_true(v, target, res))
+    if (report_incompatible(v, val <= res, output))
       continue;
 
     QT clb = lb, cub = ub;
     for (int i = 0; i < bsearch_depth; i++) {
       QT md = (clb + cub) / 2;
-      if (is_lb_true(v, target, md))
+      if (report_incompatible(v, val <= md, output))
         clb = md;
       else
         cub = md;
     }
 
     assert(res > clb);
+    
     res = clb;
   }
   bar.finish();
-  return res;
 }
 
 void run(const std::string &treedir, const std::string &ineq, 
@@ -84,9 +105,10 @@ void run(const std::string &treedir, const std::string &ineq,
   SofaBranchTree tree(ctx, Json::Value(false), leaf_nodes);
 
   Parser parser(ctx);
-  auto val = parser.parse_expr(ineq);
+  LinearForm val = parser.parse_expr(ineq);
 
-  find_lb(tree, val, out);
+  std::ofstream out_f(out);
+  find_lb(tree, val, lb, ub, 5, out_f);
 }
 
 int main(int argc, char* argv[]) {
