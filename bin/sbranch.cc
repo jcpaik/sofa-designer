@@ -16,6 +16,7 @@ namespace po = boost::program_options;
 #include "sofa/context.h"
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
+#include "sofa/cereal.h"
 
 static bool endsWith(const std::string& str, const std::string& suffix) {
     return str.size() >= suffix.size() && 0 == 

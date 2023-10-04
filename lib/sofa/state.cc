@@ -6,6 +6,7 @@
 #include "expect.h"
 #include "branch_tree.h"
 #include "qp.h"
+#include "cereal.h"
 
 SofaState::SofaState(SofaBranchTree &tree)
     : ctx(tree.ctx),
@@ -25,6 +26,16 @@ SofaState::SofaState(const SofaState &s)
       vars_(s.vars_),
       id_(s.id_),
       area_result_(s.area_result_) {
+}
+
+SofaState::SofaState(SofaBranchTree &tree, const char *file) 
+    : ctx(tree.ctx), tree(tree) {
+  load(file, *this);
+}
+
+SofaState::SofaState(SofaBranchTree &tree, CerealReader &reader)
+    : ctx(tree.ctx), tree(tree) {
+  reader >> *this;
 }
 
 bool SofaState::is_valid() const { 

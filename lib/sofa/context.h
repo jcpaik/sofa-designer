@@ -14,6 +14,9 @@
 using SofaConstraintProbe = int;
 using SofaConstraints = std::vector<SofaConstraintProbe>;
 
+class CerealReader;
+class CerealWriter;
+
 class SofaContext {
   public:
     SofaContext() = delete;
@@ -23,6 +26,8 @@ class SofaContext {
     //    so n = u.size() + 1.
     SofaContext(const std::vector<Vector> &u);
     SofaContext(const Json::Value &u);
+    // Allows loading from file
+    explicit SofaContext(const char *file);
 
     // Does the same thing as constructor, replacing the original context
     void initialize(const std::vector<Vector> &u);
@@ -120,6 +125,9 @@ class SofaContext {
 
     // Area function for a specified shape
     QuadraticForm area(const std::vector<int> &polyline) const;
+
+    friend CerealWriter &operator<<(CerealWriter &out, const SofaContext &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaContext &v);
 
     Json::Value split_values() const;
 

@@ -10,6 +10,8 @@
 #include "context.h"
 #include "qp.h"
 
+class CerealWriter;
+class CerealReader;
 class SofaBranchTree;
 
 // Invariants: 
@@ -61,6 +63,13 @@ class SofaState {
       const std::vector<LinearInequality> &extra_ineqs) const;
 
     Json::Value json() const;
+    // Read/write
+    // Does not store/load context information
+    friend CerealWriter &operator<<(CerealWriter &out, const SofaState &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaState &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
+
+    Json::Value json() const;
     
   private:
     friend class SofaBranchTree;
@@ -69,6 +78,11 @@ class SofaState {
     SofaState(SofaBranchTree &tree);
     // construct state from json
     SofaState(SofaBranchTree &tree, const Json::Value &json);
+    SofaState(SofaBranchTree &tree, int i);
+    // Read from a file
+    explicit SofaState(SofaBranchTree &tree, const char *file);
+    // Read from a stream
+    explicit SofaState(SofaBranchTree &tree, CerealReader &reader);
 
     int id_;
 

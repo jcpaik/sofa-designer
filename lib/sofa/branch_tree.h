@@ -35,6 +35,8 @@ class SofaBranchTree {
 
     // Tree with initial search
     SofaBranchTree(const SofaContext &ctx);
+    // Load from file
+    explicit SofaBranchTree(const SofaContext &ctx, const char *file);
     // Load from saved file
     SofaBranchTree(
         const SofaContext &ctx,
@@ -54,6 +56,10 @@ class SofaBranchTree {
 
     // TODO: Sets tqdm visibility
     void show_tqdm(bool flag);
+
+    friend CerealWriter &operator<<(CerealWriter &out, 
+                                    const SofaBranchTree &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
 
     Json::Value split_nodes() const;
     Json::Value leaf_nodes() const;

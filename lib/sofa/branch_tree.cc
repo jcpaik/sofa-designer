@@ -8,12 +8,18 @@
 
 #include "expect.h"
 #include "branch_logic.h"
+#include "cereal.h"
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx)
     : ctx(ctx), n(ctx.n()), last_state_id_(0) {
   valid_states_.push_back(SofaState(*this));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
+}
+
+SofaBranchTree::SofaBranchTree(const SofaContext &ctx, const char *file)
+    : ctx(ctx) {
+  load(file, *this);
 }
 
 SofaBranchTree::SofaBranchTree(
