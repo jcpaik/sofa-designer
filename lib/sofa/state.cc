@@ -87,6 +87,7 @@ SofaState SofaState::split(SofaConstraintProbe ineq) {
   other.impose(-ineq);
   other.id_ = child_right_id;
 
+  std::lock_guard<std::mutex> guard(tree.lock_);
   tree.split_states_.emplace_back(
     parent_id, ineq, child_left_id, child_right_id);
 
@@ -171,6 +172,7 @@ void SofaState::update_() {
     expect(area_ > QT(22195, 10000));
   } else {
     // state turned from valid to invalid
+    std::lock_guard<std::mutex> guard(tree.lock_);
     tree.invalid_states_.push_back(*this);
   }
 }

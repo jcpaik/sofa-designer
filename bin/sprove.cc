@@ -36,23 +36,25 @@ namespace po = boost::program_options;
 
 bool report_incompatible(
     const SofaState &v,
-    const LinearInequality &ineq,
+    const LinearForm &val,
+    const QT &lb,
     Json::Value &sink) {
-  auto res = v.is_compatible(ineq);
+  auto res = v.is_compatible(val <= lb);
   if (!res) {
-    auto &target = sink["N" + std::to_string(v.id())];
-    target = res.json();
+    auto &target = sink[v.id_string()];
+    target["lower_bound"] = to_json(lb).asString();
+    target["proof"] = res.json();
     return true;
   } else {
     return false;
   }
 }
 
-void find_lb(
+Json::Value find_lb(
     const SofaBranchTree &tree, 
     const LinearForm &val,
     QT lb, QT ub, int bsearch_depth,
-    std::ofstream &out) {
+    const std::string &out) {
 
   Json::Value output;
   QT res = ub;
@@ -62,23 +64,31 @@ void find_lb(
     bar.progress(c++, n); 
     bar.set_label(to_json(res).asString());
     
-    if (report_incompatible(v, val <= res, output))
+    if (report_incompatible(v, val, res, output))
       continue;
 
     QT clb = lb, cub = ub;
     for (int i = 0; i < bsearch_depth; i++) {
       QT md = (clb + cub) / 2;
-      if (report_incompatible(v, val <= md, output))
+      std::cout << to_json(md).asString() << std::endl;
+      if (report_incompatible(v, val, md, output))
         clb = md;
       else
         cub = md;
     }
 
     assert(res > clb);
+    if (!output.isMember(v.id_string()))
+      throw std::runtime_error("Lower bound doesn't work");
     
     res = clb;
   }
   bar.finish();
+  std::cout << to_json(res).asString();
+
+  output["lower_bound"] = to_json(res).asString();
+
+  return output;
 }
 
 void run(const std::string &treedir, const std::string &ineq, 
@@ -107,8 +117,16 @@ void run(const std::string &treedir, const std::string &ineq,
   Parser parser(ctx);
   LinearForm val = parser.parse_expr(ineq);
 
-  std::ofstream out_f(out);
-  find_lb(tree, val, lb, ub, 5, out_f);
+  std::cout << ctx.n() << std::endl;
+  for (const auto &v : tree.valid_states())
+    std::cout << v.e().size() << std::endl;
+
+  auto output = find_lb(tree, val, lb, ub, 5, out);
+  output["value"] = ineq;
+
+  std::ofstream ineq_f(out);
+  ineq_f << output;
+  ineq_f.close();
 }
 
 int main(int argc, char* argv[]) {
