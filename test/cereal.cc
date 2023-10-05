@@ -134,15 +134,16 @@ TEST_CASE( "Checking exactness of cereal read/write", "[CEREAL]" ) {
         {QT{41225,95017},QT{85608,95017}},
         {QT{440,1961},QT{1911,1961}}
         });
-    SofaBranchTree t(ctx, 3);
+    SofaBranchTree t(ctx);
+    t.add_corner(3);
     t.add_corner(4);
     // check if they give the same result
-    // debug_states(t.valid_states());
+    debug_states(t.valid_states());
     save("tree.crl", t);
 
     SofaBranchTree t2(ctx, "tree.crl");
     // check if they give the same result
-    // debug_states(t2.valid_states());
+    debug_states(t2.valid_states());
   }
   /*
   BENCHMARK("qform store and write") {

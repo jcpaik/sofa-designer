@@ -174,6 +174,7 @@ CerealReader &operator>>(CerealReader &in, SofaState &v) {
   in >> v.conds_;
   in >> v.area_;
   in >> v.vars_;
+  v.is_frozen_ = true;
   return in;
 }
 

@@ -62,7 +62,6 @@ class SofaState {
     SofaAreaResult is_compatible(
       const std::vector<LinearInequality> &extra_ineqs) const;
 
-    Json::Value json() const;
     // Read/write
     // Does not store/load context information
     friend CerealWriter &operator<<(CerealWriter &out, const SofaState &v);
@@ -78,7 +77,6 @@ class SofaState {
     SofaState(SofaBranchTree &tree);
     // construct state from json
     SofaState(SofaBranchTree &tree, const Json::Value &json);
-    SofaState(SofaBranchTree &tree, int i);
     // Read from a file
     explicit SofaState(SofaBranchTree &tree, const char *file);
     // Read from a stream
@@ -89,6 +87,10 @@ class SofaState {
     std::vector<int> e_; 
     SofaConstraints conds_;
 
+    // If a state node is 'frozen', user can't modify the contents of a node.
+    // If the node is loaded from a file, the node gets frozen immediately.
+    bool is_frozen_;
+    bool is_valid_;
     // If state is invalid, contains a correct proof of invalidity
     // If valid, `area_result_` may not contain a correct proof of optimality
     // but `area_` and `vars_` always contain a valid assignment

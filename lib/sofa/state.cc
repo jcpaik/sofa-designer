@@ -13,7 +13,8 @@ SofaState::SofaState(SofaBranchTree &tree)
       tree(tree), 
       e_({0}), 
       conds_(ctx.default_constraints()),
-      id_(0) {
+      id_(0),
+      is_frozen_(false) {
   update_();
 }
 
@@ -25,6 +26,8 @@ SofaState::SofaState(const SofaState &s)
       area_(s.area_), 
       vars_(s.vars_),
       id_(s.id_),
+      is_frozen_(s.is_frozen_),
+      is_valid_(s.is_valid_),
       area_result_(s.area_result_) {
 }
 
@@ -39,7 +42,7 @@ SofaState::SofaState(SofaBranchTree &tree, CerealReader &reader)
 }
 
 bool SofaState::is_valid() const { 
-  return bool(area_result_);
+  return is_valid_;
 }
 
 int SofaState::id() const {
@@ -72,6 +75,8 @@ void SofaState::impose(SofaConstraintProbe cond) {
 }
 
 void SofaState::impose(const SofaConstraints &conds) {
+  expect(!is_frozen_);
+
   if (is_valid()) {
     bool skip_update = true;
     for (const auto &cond : conds) {
@@ -86,7 +91,8 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
-  expect(is_valid());
+  expect(!is_frozen_)
+  expect(is_valid_);
 
   int parent_id = this->id_;
   int child_left_id = tree.new_state_id_();
@@ -122,6 +128,7 @@ Vector SofaState::v(int i) const {
 }
 
 void SofaState::update_e(const std::vector<int> &e) {
+  expect(!is_frozen_);
   if (is_valid()) {
     e_ = e;
     auto narea = (ctx.area(e_))(vars_);
@@ -177,11 +184,13 @@ SofaState::SofaState(SofaBranchTree &tree, const Json::Value &json) :
 void SofaState::update_() {
   area_result_ = sofa_area_qp(ctx.area(e_), ctx, conds_);
   if (area_result_) {
+    is_valid_ = true;
     area_ = area_result_.optimality_proof().max_area;
     vars_ = area_result_.optimality_proof().maximizer;
     expect((ctx.area(e_))(vars_) == area_);
     expect(area_ > QT(22195, 10000));
   } else {
+    is_valid_ = false;
     // state turned from valid to invalid
     std::lock_guard<std::mutex> guard(tree.lock_);
     tree.invalid_states_.push_back(*this);
