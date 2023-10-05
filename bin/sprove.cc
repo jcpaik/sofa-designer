@@ -14,6 +14,7 @@ namespace po = boost::program_options;
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
 #include "sofa/json.h"
+#include "sofa/cereal.h"
 #include "parse.h"
 #include "tqdm.h"
 
@@ -37,96 +38,60 @@ namespace po = boost::program_options;
 bool report_incompatible(
     const SofaState &v,
     const LinearForm &val,
-    const QT &lb,
-    Json::Value &sink) {
+    const QT &lb) {
   auto res = v.is_compatible(val <= lb);
   if (!res) {
-    auto &target = sink[v.id_string()];
-    target["lower_bound"] = to_json(lb).asString();
-    target["proof"] = res.json();
     return true;
   } else {
     return false;
   }
 }
 
-Json::Value find_lb(
+void find_lb(
     const SofaBranchTree &tree, 
     const LinearForm &val,
     QT lb, QT ub, int bsearch_depth,
     const std::string &out) {
 
-  Json::Value output;
   QT res = ub;
   tqdm bar;
   int c = 0, n = tree.valid_states().size();
   for (const auto &v : tree.valid_states()) {
-    bar.progress(c++, n); 
+    bar.progress(c++, n);
     bar.set_label(to_json(res).asString());
     
-    if (report_incompatible(v, val, res, output))
-      continue;
-
-    QT clb = lb, cub = ub;
-    for (int i = 0; i < bsearch_depth; i++) {
-      QT md = (clb + cub) / 2;
-      std::cout << to_json(md).asString() << std::endl;
-      if (report_incompatible(v, val, md, output))
-        clb = md;
-      else
-        cub = md;
+    if (!report_incompatible(v, val, res)) {
+      QT clb = lb, cub = ub;
+      for (int i = 0; i < bsearch_depth; i++) {
+        QT md = (clb + cub) / 2;
+        if (report_incompatible(v, val, md))
+          clb = md;
+        else
+          cub = md;
+      }
+      res = clb;
+      expect(report_incompatible(v, val, res));
     }
-
-    assert(res > clb);
-    if (!output.isMember(v.id_string()))
-      throw std::runtime_error("Lower bound doesn't work");
-    
-    res = clb;
   }
   bar.finish();
   std::cout << to_json(res).asString();
-
-  output["lower_bound"] = to_json(res).asString();
-
-  return output;
 }
 
-void run(const std::string &treedir, const std::string &ineq, 
+void run(const std::string &treefile, const std::string &ineq, 
     QT lb, QT ub, const std::string &out) {
-  std::filesystem::path treep(treedir);
-  if (!std::filesystem::is_directory(treep)) {
-    throw std::runtime_error("The tree directory does not exist");
-  }
-  
-  Json::Value angles;
-  {
-    std::ifstream angles_f(treep / std::filesystem::path("angles.json"));
-    angles_f >> angles;
-    angles_f.close();
-  }
-  SofaContext ctx(angles);
 
-  Json::Value leaf_nodes;
-  {
-    std::ifstream leaf_nodes_f(treep / std::filesystem::path("leaf-nodes.json"));
-    leaf_nodes_f >> leaf_nodes;
-    leaf_nodes_f.close();
-  }
-  SofaBranchTree tree(ctx, Json::Value(false), leaf_nodes);
+  CerealReader reader(treefile.c_str());
+  SofaContext ctx(reader);
+  SofaBranchTree tree(ctx, reader);
+  // expect(reader.eof());
+  reader.close();
 
   Parser parser(ctx);
   LinearForm val = parser.parse_expr(ineq);
 
-  std::cout << ctx.n() << std::endl;
-  for (const auto &v : tree.valid_states())
-    std::cout << v.e().size() << std::endl;
+  find_lb(tree, val, lb, ub, 5, out);
 
-  auto output = find_lb(tree, val, lb, ub, 5, out);
-  output["value"] = ineq;
-
-  std::ofstream ineq_f(out);
-  ineq_f << output;
-  ineq_f.close();
+  // TODO: json output functionality
 }
 
 int main(int argc, char* argv[]) {
@@ -137,12 +102,12 @@ int main(int argc, char* argv[]) {
     po::options_description desc("Allowed options");
     desc.add_options()
       ("help", "Produce help message")
-      ("tree", po::value<std::string>(&tree), "Required tree output directory of sbranch")
+      ("tree", po::value<std::string>(&tree), "Required tree cereal output of sbranch")
       ("ineq", po::value<std::string>(&ineq), "Required inequality in string form")
       ("lb", po::value<std::string>(&lb_str), "Required inequality in string form")
       ("ub", po::value<std::string>(&ub_str), "Required inequality in string form")
       ("out", po::value<std::string>(&out)->implicit_value(""),
-         "Directory for proof output (optional)\n")
+         "Directory for proof output in json (optional)\n")
       ;
 
     po::positional_options_description p;

@@ -36,7 +36,8 @@ QT rational(const std::string &s) {
 void process_angles(
     Json::Value &angles,
     unsigned int nthreads,
-    const std::string &out) {
+    const std::string &out,
+    bool json_output) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
   
@@ -73,40 +74,49 @@ void process_angles(
   std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
   std::cout << "Area: " << marea << std::endl;
 
-  // If output directory is specified, export the json files
-  if (!out.empty()) {
-    std::filesystem::path fp(out);
+  if (out.empty())
+    return;
+  
+  if (!json_output) {
+    // use cerealization
+    CerealWriter writer(out.c_str());
+    writer << ctx << t;
+    writer.close();
+    return;
+  }
 
-    if (std::filesystem::exists(fp)) {
-      std::cout << "Warning: the output directory already exists!" << std::endl;
-    }
+  // json output
+  std::filesystem::path fp(out);
 
-    std::filesystem::create_directory(fp);
+  if (std::filesystem::exists(fp)) {
+    std::cout << "Warning: the output directory already exists!" << std::endl;
+  }
 
-    // Write the files
-    { 
-      std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
-      angles_f << angles;
-      angles_f.close();
-    }
+  std::filesystem::create_directory(fp);
 
-    {
-      std::ofstream split_values_f(fp / std::filesystem::path("split-values.json"));
-      split_values_f << ctx.split_values();
-      split_values_f.close();
-    }
+  // Write the files
+  { 
+    std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
+    angles_f << angles;
+    angles_f.close();
+  }
 
-    {
-      std::ofstream split_nodes_f(fp / std::filesystem::path("split-nodes.json"));
-      split_nodes_f << t.split_nodes();
-      split_nodes_f.close();
-    }
+  {
+    std::ofstream split_values_f(fp / std::filesystem::path("split-values.json"));
+    split_values_f << ctx.split_values();
+    split_values_f.close();
+  }
 
-    {
-      std::ofstream leaf_nodes_f(fp / std::filesystem::path("leaf-nodes.json"));
-      leaf_nodes_f << t.leaf_nodes();
-      leaf_nodes_f.close();
-    }
+  {
+    std::ofstream split_nodes_f(fp / std::filesystem::path("split-nodes.json"));
+    split_nodes_f << t.split_nodes();
+    split_nodes_f.close();
+  }
+
+  {
+    std::ofstream leaf_nodes_f(fp / std::filesystem::path("leaf-nodes.json"));
+    leaf_nodes_f << t.leaf_nodes();
+    leaf_nodes_f.close();
   }
 }
 
@@ -121,11 +131,12 @@ int main(int argc, char* argv[]) {
       ("help", "Produce help message")
       ("angles", po::value<std::string>(&angles), "Required angle partition")
       ("out", po::value<std::string>(&out)->implicit_value(""),
-         "Directory for output (optional)\n")
+        "File/directory for output (optional)\n")
+      ("json", "For output to be json")
       ("nthreads", po::value<unsigned int>(&nthreads)->implicit_value(1),
-         "Number of threads to use (optional)\n"
-         "Note that the output is not deterministic "
-         "when the option is specified")
+        "Number of threads to use (optional)\n"
+        "Note that the output is not deterministic "
+        "when the option is specified")
       ;
 
     po::positional_options_description p;
@@ -135,7 +146,9 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;        
     po::store(po::command_line_parser(argc, argv).
               options(desc).positional(p).run(), vm);
-    po::notify(vm);    
+    po::notify(vm);
+
+    bool json_output = vm.count("json");
 
     // Logic
     if (vm.count("help")) {
@@ -154,7 +167,7 @@ int main(int argc, char* argv[]) {
     std::ifstream inp(angles);
     Json::Value angles_json;
     inp >> angles_json;
-    process_angles(angles_json, nthreads, out);
+    process_angles(angles_json, nthreads, out, json_output);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;

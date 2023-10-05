@@ -174,18 +174,15 @@ CerealReader &operator>>(CerealReader &in, SofaState &v) {
   in >> v.conds_;
   in >> v.area_;
   in >> v.vars_;
-  v.is_frozen_ = true;
   return in;
 }
 
 CerealWriter &operator<<(CerealWriter &out, const SofaBranchTree &v) {
-  out << v.n;
   out << v.valid_states_;
   return out;
 }
 
 CerealReader &operator>>(CerealReader &in, SofaBranchTree &v) {
-  in >> v.n;
   v.valid_states_.clear();
   size_t sz;
   in >> sz;

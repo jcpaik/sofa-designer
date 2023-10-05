@@ -115,7 +115,9 @@ TEST_CASE( "Checking exactness of cereal read/write", "[CEREAL]" ) {
   }
   {
     save("ctx.crl", ctx);
-    SofaContext cc("ctx.crl");
+    CerealReader reader("ctx.crl");
+    SofaContext cc(reader);
+    reader.close();
     auto v = sofa_area_qp(
         cc.area({0, 1, 2, 5, -3, 4, -4, 3, -5, -2, -1, 0}), 
         cc,
@@ -138,12 +140,20 @@ TEST_CASE( "Checking exactness of cereal read/write", "[CEREAL]" ) {
     t.add_corner(3);
     t.add_corner(4);
     // check if they give the same result
-    debug_states(t.valid_states());
     save("tree.crl", t);
 
-    SofaBranchTree t2(ctx, "tree.crl");
-    // check if they give the same result
-    debug_states(t2.valid_states());
+    CerealReader reader("tree.crl");
+    SofaBranchTree t2(ctx, reader);
+    reader.close();
+    auto l = t.valid_states();
+    auto l2 = t2.valid_states();
+    REQUIRE( l.size() == l2.size() );
+    for (size_t i = 0; i < l.size(); i++) {
+      REQUIRE( l[i].id() == l2[i].id() );
+      REQUIRE( l[i].e() == l2[i].e() );
+      REQUIRE( l[i].conds() == l2[i].conds() );
+    }
+    // TODO: check if they give the same result
   }
   /*
   BENCHMARK("qform store and write") {

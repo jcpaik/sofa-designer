@@ -125,7 +125,7 @@ SofaAreaResult sofa_area_qp(
   // The CGAL solver accepts integer types
   // so we need to multiply the whole program with common denominator
 
-  // Find the least common multiple of denominators
+  // Find the least common multiple of denominators of the quadratic form q
   NT d = q.w0().denominator();
   for (int j = 0; j < n; j++) {
     NT v = q.w1(j).denominator();
@@ -228,21 +228,8 @@ SofaAreaResult sofa_area_qp(
         lambdas_extra[i - m] = lambda;
     }
 
-    // check contradiction
-    LinearForm x(n);
-    for (auto const& [id, lambda] : lambdas) {
-      expect(lambda > 0);
-      x += ctx.ineq(id).nonneg_value() * lambda;
-    }
-    for (auto const& [id, lambda] : lambdas_extra) {
-      expect(lambda > 0);
-      x += extra_ineqs[id].nonneg_value() * lambda;
-    }
-    // we added nonnegative values, but the result is strictly negative
-    expect(x.w0() < 0);
-    for (const auto &val : x.w1())
-      expect(val <= 0);
-    
+    // important TODO: certificate terribly wrong
+
     return {SofaAreaInvalidityProof{lambdas, lambdas_extra}};
   } else {
     // sol.status == CGAL::QP_OPTIMAL

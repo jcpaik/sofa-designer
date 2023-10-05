@@ -25,9 +25,9 @@ class SofaContext {
     //    The vectors corresponding to (0, 1) and (1, 0) are skipped,
     //    so n = u.size() + 1.
     SofaContext(const std::vector<Vector> &u);
-    SofaContext(const Json::Value &u);
+    explicit SofaContext(const Json::Value &u);
     // Allows loading from file
-    explicit SofaContext(const char *file);
+    SofaContext(CerealReader &reader);
 
     // Does the same thing as constructor, replacing the original context
     void initialize(const std::vector<Vector> &u);

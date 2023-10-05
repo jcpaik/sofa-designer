@@ -11,22 +11,22 @@
 #include "cereal.h"
 
 SofaBranchTree::SofaBranchTree(const SofaContext &ctx)
-    : ctx(ctx), n(ctx.n()), last_state_id_(0) {
+    : ctx(ctx), last_state_id_(0) {
   valid_states_.push_back(SofaState(*this));
   // std::cout << valid_states_.back().is_valid() << std::endl;
   // std::cout << valid_states_.back().area() << std::endl;
 }
 
-SofaBranchTree::SofaBranchTree(const SofaContext &ctx, const char *file)
-    : ctx(ctx) {
-  load(file, *this);
+SofaBranchTree::SofaBranchTree(const SofaContext &ctx, CerealReader &reader)
+    : ctx(ctx), last_state_id_(0) {
+  reader >> *this;
 }
 
 SofaBranchTree::SofaBranchTree(
     const SofaContext &ctx,
     const Json::Value &split_nodes,
     const Json::Value &leaf_nodes)
-    : ctx(ctx), n(ctx.n()), last_state_id_(0) {
+    : ctx(ctx), last_state_id_(0) {
   // don't update split_nodes
   // don't keep track of last ID
 
@@ -62,6 +62,7 @@ std::vector<SofaState> process(
 }
 
 void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
+  int n = ctx.n();
   expect(1 <= i && i < n);
   std::vector<SofaState> cur_states[nthread];
   for (int idx = 0; idx < int(valid_states_.size()); idx++)

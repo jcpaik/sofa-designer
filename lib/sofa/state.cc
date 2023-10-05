@@ -11,9 +11,9 @@
 SofaState::SofaState(SofaBranchTree &tree)
     : ctx(tree.ctx),
       tree(tree), 
+      id_(0),
       e_({0}), 
       conds_(ctx.default_constraints()),
-      id_(0),
       is_frozen_(false) {
   update_();
 }
@@ -21,24 +21,35 @@ SofaState::SofaState(SofaBranchTree &tree)
 SofaState::SofaState(const SofaState &s)
     : ctx(s.ctx), 
       tree(s.tree),
+      id_(s.id_),
+      is_valid_(s.is_valid_),
       e_(s.e_), 
       conds_(s.conds_), 
       area_(s.area_), 
       vars_(s.vars_),
-      id_(s.id_),
       is_frozen_(s.is_frozen_),
-      is_valid_(s.is_valid_),
       area_result_(s.area_result_) {
 }
 
 SofaState::SofaState(SofaBranchTree &tree, const char *file) 
-    : ctx(tree.ctx), tree(tree) {
+    : ctx(tree.ctx), tree(tree), is_frozen_(true) {
   load(file, *this);
 }
 
 SofaState::SofaState(SofaBranchTree &tree, CerealReader &reader)
-    : ctx(tree.ctx), tree(tree) {
+    : ctx(tree.ctx), tree(tree), is_frozen_(true) {
   reader >> *this;
+}
+
+// TODO: area_ or vars_ not initialized
+SofaState::SofaState(SofaBranchTree &tree, const Json::Value &json) : 
+    ctx(tree.ctx),
+    tree(tree), 
+    e_(ints_from_json(json["niche"])), 
+    conds_(ints_from_json(json["constraints"])),
+    id_(json["id"].asInt()),
+    is_frozen_(true),
+    is_valid_(json["valid"].asBool()) {
 }
 
 bool SofaState::is_valid() const { 
@@ -54,19 +65,19 @@ std::string SofaState::id_string() const {
 }
 
 QT SofaState::area() { 
-  expect(is_valid());
+  expect(!is_frozen_ && is_valid_);
   update_();
   return area_; 
 }
 
 std::vector<QT> SofaState::vars() { 
-  expect(is_valid());
+  expect(!is_frozen_ && is_valid_);
   update_();
   return vars_; 
 }
 
 void SofaState::impose(SofaConstraintProbe cond) {
-  if (is_valid()) {
+  if (is_valid_) {
     conds_.push_back(cond);
     // Update only when current solution becomes invalid
     if (!ctx.ineq(cond)(vars_))
@@ -91,7 +102,7 @@ void SofaState::impose(const SofaConstraints &conds) {
 }
 
 SofaState SofaState::split(SofaConstraintProbe ineq) {
-  expect(!is_frozen_)
+  expect(!is_frozen_);
   expect(is_valid_);
 
   int parent_id = this->id_;
@@ -113,6 +124,10 @@ SofaState SofaState::split(SofaConstraintProbe ineq) {
 
 const std::vector<int> &SofaState::e() const { 
   return e_; 
+}
+
+const std::vector<SofaConstraintProbe> &SofaState::conds() const { 
+  return conds_; 
 }
 
 int SofaState::e(int i) const {
@@ -173,15 +188,8 @@ Json::Value SofaState::json() const {
   return res;
 }
 
-SofaState::SofaState(SofaBranchTree &tree, const Json::Value &json) : 
-    ctx(tree.ctx), tree(tree), e_(ints_from_json(json["niche"])), 
-    conds_(ints_from_json(json["constraints"])), id_(json["id"].asInt()) {
-  update_();
-  if (is_valid())
-    tree.valid_states_.push_back(*this);
-}
-
 void SofaState::update_() {
+  expect(!is_frozen_);
   area_result_ = sofa_area_qp(ctx.area(e_), ctx, conds_);
   if (area_result_) {
     is_valid_ = true;

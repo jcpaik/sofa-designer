@@ -40,6 +40,7 @@ class SofaState {
     std::string id_string() const;
     // Accessors to polyline constructs
     const std::vector<int> &e() const;
+    const std::vector<SofaConstraintProbe> &conds() const;
     int e(int i) const;
     const LinearFormPoint &p(int i) const;
     Vector v(int i) const;
@@ -89,14 +90,14 @@ class SofaState {
 
     // If a state node is 'frozen', user can't modify the contents of a node.
     // If the node is loaded from a file, the node gets frozen immediately.
-    bool is_frozen_;
+    const bool is_frozen_;
     bool is_valid_;
     // If state is invalid, contains a correct proof of invalidity
     // If valid, `area_result_` may not contain a correct proof of optimality
     // but `area_` and `vars_` always contain a valid assignment
     SofaAreaResult area_result_;
     QT area_;
-    std::vector<QT> vars_; 
+    std::vector<QT> vars_;
 
     // Called if and only if the state changes its value
     void update_();

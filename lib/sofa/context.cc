@@ -22,8 +22,8 @@ SofaContext::SofaContext(const Json::Value &angles) {
   initialize(gamma);
 } 
 
-SofaContext::SofaContext(const char *file) {
-  load(file, *this);
+SofaContext::SofaContext(CerealReader &reader) {
+  reader >> *this;
 }
 
 void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &name) {
