@@ -74,7 +74,7 @@ void find_lb(
     }
   }
   bar.finish();
-  std::cout << to_json(res).asString();
+  std::cout << to_json(res).asString() << std::endl;
 }
 
 void run(const std::string &treefile, const std::string &ineq, 
