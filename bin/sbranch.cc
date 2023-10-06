@@ -37,7 +37,8 @@ void process_angles(
     Json::Value &angles,
     unsigned int nthreads,
     const std::string &out,
-    bool json_output) {
+    bool json_output,
+    bool show_max_area) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
   
@@ -64,15 +65,17 @@ void process_angles(
     t.add_corner(bidx[i], true, nthreads);
   }
 
-  // Print relevant information
-  QT marea(0);
-  auto x(t.valid_states());
-  for (auto &s : x) {
-    auto a = s.area();
-    marea = std::max(marea, a);
+  if (show_max_area) {
+    // Print relevant information
+    QT marea(0);
+    auto x(t.valid_states());
+    for (auto &s : x) {
+      auto a = s.area();
+      marea = std::max(marea, a);
+    }
+    std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
+    std::cout << "Area: " << marea << std::endl;
   }
-  std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
-  std::cout << "Area: " << marea << std::endl;
 
   if (out.empty())
     return;
@@ -137,6 +140,7 @@ int main(int argc, char* argv[]) {
         "Number of threads to use (optional)\n"
         "Note that the output is not deterministic "
         "when the option is specified")
+      ("show-max-area", "Computes maximum area (takes more time)")
       ;
 
     po::positional_options_description p;
@@ -149,6 +153,7 @@ int main(int argc, char* argv[]) {
     po::notify(vm);
 
     bool json_output = vm.count("json");
+    bool show_max_area = vm.count("show-max-area");
 
     // Logic
     if (vm.count("help")) {
@@ -167,7 +172,7 @@ int main(int argc, char* argv[]) {
     std::ifstream inp(angles);
     Json::Value angles_json;
     inp >> angles_json;
-    process_angles(angles_json, nthreads, out, json_output);
+    process_angles(angles_json, nthreads, out, json_output, show_max_area);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
