@@ -67,6 +67,7 @@ void find_lb_worker(
         }
         if (!lb_found)
           throw std::runtime_error("Lower bound invalid");
+        expect(lb > clb);
         lb = clb;
       }
       mutex.unlock();
