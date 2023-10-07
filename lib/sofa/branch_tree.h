@@ -35,8 +35,10 @@ class SofaBranchTree {
 
     // Tree with initial search
     SofaBranchTree(const SofaContext &ctx);
-    // Load from saved file
-    SofaBranchTree(
+    // Load from cereal stream
+    SofaBranchTree(const SofaContext &ctx, CerealReader &reader);
+    // Load from json
+    explicit SofaBranchTree(
         const SofaContext &ctx,
         const Json::Value &split_nodes,
         const Json::Value &leaf_nodes);
@@ -55,11 +57,14 @@ class SofaBranchTree {
     // TODO: Sets tqdm visibility
     void show_tqdm(bool flag);
 
+    friend CerealWriter &operator<<(CerealWriter &out, 
+                                    const SofaBranchTree &v);
+    friend CerealReader &operator>>(CerealReader &in, SofaBranchTree &v);
+
     Json::Value split_nodes() const;
     Json::Value leaf_nodes() const;
 
   private:
-    int n;
     // List of indices unioned so far with `add_corner`
     std::vector<int> indices_;
     std::vector<SofaState> valid_states_;

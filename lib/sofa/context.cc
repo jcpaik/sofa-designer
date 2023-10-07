@@ -3,6 +3,7 @@
 #include <string>
 
 #include "expect.h"
+#include "cereal.h"
 
 SofaContext::SofaContext(const std::vector<Vector> &u) {
   initialize(u);
@@ -19,6 +20,10 @@ SofaContext::SofaContext(const Json::Value &angles) {
   }
 
   initialize(gamma);
+} 
+
+SofaContext::SofaContext(CerealReader &reader) {
+  reader >> *this;
 }
 
 void SofaContext::add_ineq_(const LinearInequality &ineq, const std::string &name) {

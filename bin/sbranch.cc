@@ -16,6 +16,7 @@ namespace po = boost::program_options;
 #include "sofa/context.h"
 #include "sofa/geom.h"
 #include "sofa/branch_tree.h"
+#include "sofa/cereal.h"
 
 static bool endsWith(const std::string& str, const std::string& suffix) {
     return str.size() >= suffix.size() && 0 == 
@@ -35,7 +36,9 @@ QT rational(const std::string &s) {
 void process_angles(
     Json::Value &angles,
     unsigned int nthreads,
-    const std::string &out) {
+    const std::string &out,
+    bool json_output,
+    bool show_max_area) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
   
@@ -62,50 +65,61 @@ void process_angles(
     t.add_corner(bidx[i], true, nthreads);
   }
 
-  // Print relevant information
-  QT marea(0);
-  auto x(t.valid_states());
-  for (auto &s : x) {
-    auto a = s.area();
-    marea = std::max(marea, a);
+  if (show_max_area) {
+    // Print relevant information
+    QT marea(0);
+    auto x(t.valid_states());
+    for (auto &s : x) {
+      auto a = s.area();
+      marea = std::max(marea, a);
+    }
+    std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
+    std::cout << "Area: " << marea << std::endl;
   }
-  std::cout << "Number of valid states: " << t.valid_states().size() << std::endl;
-  std::cout << "Area: " << marea << std::endl;
 
-  // If output directory is specified, export the json files
-  if (!out.empty()) {
-    std::filesystem::path fp(out);
+  if (out.empty())
+    return;
+  
+  if (!json_output) {
+    // use cerealization
+    CerealWriter writer(out.c_str());
+    writer << ctx << t;
+    writer.close();
+    return;
+  }
 
-    if (std::filesystem::exists(fp)) {
-      std::cout << "Warning: the output directory already exists!" << std::endl;
-    }
+  // json output
+  std::filesystem::path fp(out);
 
-    std::filesystem::create_directory(fp);
+  if (std::filesystem::exists(fp)) {
+    std::cout << "Warning: the output directory already exists!" << std::endl;
+  }
 
-    // Write the files
-    { 
-      std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
-      angles_f << angles;
-      angles_f.close();
-    }
+  std::filesystem::create_directory(fp);
 
-    {
-      std::ofstream split_values_f(fp / std::filesystem::path("split-values.json"));
-      split_values_f << ctx.split_values();
-      split_values_f.close();
-    }
+  // Write the files
+  { 
+    std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
+    angles_f << angles;
+    angles_f.close();
+  }
 
-    {
-      std::ofstream split_nodes_f(fp / std::filesystem::path("split-nodes.json"));
-      split_nodes_f << t.split_nodes();
-      split_nodes_f.close();
-    }
+  {
+    std::ofstream split_values_f(fp / std::filesystem::path("split-values.json"));
+    split_values_f << ctx.split_values();
+    split_values_f.close();
+  }
 
-    {
-      std::ofstream leaf_nodes_f(fp / std::filesystem::path("leaf-nodes.json"));
-      leaf_nodes_f << t.leaf_nodes();
-      leaf_nodes_f.close();
-    }
+  {
+    std::ofstream split_nodes_f(fp / std::filesystem::path("split-nodes.json"));
+    split_nodes_f << t.split_nodes();
+    split_nodes_f.close();
+  }
+
+  {
+    std::ofstream leaf_nodes_f(fp / std::filesystem::path("leaf-nodes.json"));
+    leaf_nodes_f << t.leaf_nodes();
+    leaf_nodes_f.close();
   }
 }
 
@@ -120,11 +134,13 @@ int main(int argc, char* argv[]) {
       ("help", "Produce help message")
       ("angles", po::value<std::string>(&angles), "Required angle partition")
       ("out", po::value<std::string>(&out)->implicit_value(""),
-         "Directory for output (optional)\n")
+        "File/directory for output (optional)\n")
+      ("json", "For output to be json")
       ("nthreads", po::value<unsigned int>(&nthreads)->implicit_value(1),
-         "Number of threads to use (optional)\n"
-         "Note that the output is not deterministic "
-         "when the option is specified")
+        "Number of threads to use (optional)\n"
+        "Note that the output is not deterministic "
+        "when the option is specified")
+      ("show-max-area", "Computes maximum area (takes more time)")
       ;
 
     po::positional_options_description p;
@@ -134,7 +150,10 @@ int main(int argc, char* argv[]) {
     po::variables_map vm;        
     po::store(po::command_line_parser(argc, argv).
               options(desc).positional(p).run(), vm);
-    po::notify(vm);    
+    po::notify(vm);
+
+    bool json_output = vm.count("json");
+    bool show_max_area = vm.count("show-max-area");
 
     // Logic
     if (vm.count("help")) {
@@ -153,7 +172,7 @@ int main(int argc, char* argv[]) {
     std::ifstream inp(angles);
     Json::Value angles_json;
     inp >> angles_json;
-    process_angles(angles_json, nthreads, out);
+    process_angles(angles_json, nthreads, out, json_output, show_max_area);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
