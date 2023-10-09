@@ -3,3 +3,6 @@ build/
 *.swp
 docs/
 sketches/
+runs/*
+!runs/*.json
+!runs/*.sh
