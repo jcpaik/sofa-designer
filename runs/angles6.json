@@ -1,8 +1,7 @@
 [
-    {"cos": "4977/5105", "sin": "1136/5105", "branch_order": 4},
-    {"cos": "8023/8905", "sin": "3864/8905", "branch_order": 2},
-    {"cos": "351/449"  , "sin": "280/449"  , "branch_order": 0},
-    {"cos": "280/449"  , "sin": "351/449"  , "branch_order": 1},
-    {"cos": "3864/8905", "sin": "8023/8905", "branch_order": 3},
-    {"cos": "1136/5105", "sin": "4977/5105", "branch_order": 5}
+    {"cos": "12/13", "sin": "5/13", "branch_order": 4},
+    {"cos": "3596/4325", "sin": "2403/4325", "branch_order": 2},
+    {"cos": "803761/1136689"  , "sin": "803760/1136689"  , "branch_order": 0},
+    {"cos": "2403/4325"  , "sin": "3596/4325"  , "branch_order": 1},
+    {"cos": "5/13", "sin": "12/13", "branch_order": 3}
 ]
