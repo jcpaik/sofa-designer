@@ -38,6 +38,7 @@ void process_angles(
     unsigned int nthreads,
     const std::string &out,
     bool json_output,
+    bool verbose,
     bool show_max_area) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
@@ -62,7 +63,7 @@ void process_angles(
   SofaContext ctx(angles);
   SofaBranchTree t(ctx);
   for (int i = 0; i < bidx.size(); i++) {
-    t.add_corner(bidx[i], true, nthreads);
+    t.add_corner(bidx[i], verbose, nthreads);
   }
 
   if (show_max_area) {
@@ -131,11 +132,12 @@ int main(int argc, char* argv[]) {
     // Set up syntax for arguments
     po::options_description desc("Allowed options");
     desc.add_options()
-      ("help", "Produce help message")
-      ("angles", po::value<std::string>(&angles), "Required angle partition")
-      ("out", po::value<std::string>(&out)->implicit_value(""),
-        "File/directory for output (optional)\n")
-      ("json", "For output to be json")
+      ("help,h", "Produce help message")
+      ("angles", po::value<std::string>(&angles), "Required angle partition in .json")
+      ("out,o", po::value<std::string>(&out)->implicit_value(""),
+        "Directory for the final branch tree (optional)\n")
+      ("json", "Prints the branch tree in json")
+      ("silent", "Silent or quiet mode. Don't show progress meter")
       ("nthreads", po::value<unsigned int>(&nthreads)->implicit_value(1),
         "Number of threads to use (optional)\n"
         "Note that the output is not deterministic "
@@ -153,6 +155,7 @@ int main(int argc, char* argv[]) {
     po::notify(vm);
 
     bool json_output = vm.count("json");
+    bool verbose = (vm.count("silent") != 0);
     bool show_max_area = vm.count("show-max-area");
 
     // Logic
@@ -172,7 +175,7 @@ int main(int argc, char* argv[]) {
     std::ifstream inp(angles);
     Json::Value angles_json;
     inp >> angles_json;
-    process_angles(angles_json, nthreads, out, json_output, show_max_area);
+    process_angles(angles_json, nthreads, out, json_output, verbose, show_max_area);
   } catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
     return 1;
