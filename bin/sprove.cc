@@ -30,6 +30,7 @@ struct Config {
   int nthreads;
   bool find_lb, find_ub;
   std::string json_export_path;
+  bool verbose;
 };
 
 Config parse_config(int argc, char* argv[]) {
@@ -39,19 +40,20 @@ Config parse_config(int argc, char* argv[]) {
   // Set up syntax for arguments
   po::options_description desc("Allowed options");
   desc.add_options()
-    ("help", "Produce help message")
+    ("help,h", "Produce help message")
+    ("--lower-bound,l", "Find lower bound (One of -l, -u required)")
+    ("--upper-bound,u", "Find upper bound (One of -l, -u required)")
     ("tree", po::value<std::string>(&tree), "Required tree cereal output of sbranch")
     ("value", po::value<std::string>(&value), "Required value in string form")
-    ("min", po::value<std::string>(&min_str), "Required minimum value of lower/upper bound for binary search")
-    ("max", po::value<std::string>(&max_str), "Required minimum value of lower/upper bound for binary search")
-    ("lb", "Find lower bound")
-    ("ub", "Find upper bound")
+    ("bound-min", po::value<std::string>(&min_str), "Required minimum value of lower/upper bound for binary search")
+    ("bound-max", po::value<std::string>(&max_str), "Required minimum value of lower/upper bound for binary search")
     ("json", po::value<std::string>(&json_out)->default_value(""),
       "Directory for proof output in json (optional)\n")
+    ("silent", "Silent or quiet mode. Don't show progress meter")
     ("nthreads", po::value<int>(&nthreads)->default_value(1),
       "Number of threads to use (optional)\n")
     ("bsearch-depth", po::value<int>(&bsearch_depth)->default_value(5),
-      "Depth of binary search (optional)\n")
+      "Depth of binary search (defaults to 5)\n")
     ;
 
   po::positional_options_description p;
@@ -75,8 +77,8 @@ Config parse_config(int argc, char* argv[]) {
   return Config{
     tree, value, QT(min_str), QT(max_str),
     bsearch_depth, nthreads,
-    vm.count("lb") > 0, vm.count("ub") > 0,
-    json_out
+    vm.count("lower-bound") > 0, vm.count("upper-bound") > 0,
+    json_out, vm.count("silent") == 0
   };
 }
 
