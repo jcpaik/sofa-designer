@@ -20,9 +20,10 @@ LinearInequality::LinearInequality(
     b_ /= g;
     for (auto &v : a_)
       v /= g;
+    scale_ = QT{1, g};
+  } else {
+    scale_ = QT{1, 1};
   }
-
-  scale_ = QT{1, g};
 }
 
 LinearInequality::LinearInequality(
