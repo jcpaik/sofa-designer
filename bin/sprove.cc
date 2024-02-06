@@ -56,7 +56,7 @@ Config parse_config(int argc, char* argv[]) {
 
   po::positional_options_description p;
   p.add("tree", 1);
-  p.add("ineq", 1);
+  p.add("value", 1);
   p.add("min", 1);
   p.add("max", 1);
 
@@ -87,6 +87,7 @@ bool report_incompatible(
     const SofaState &v,
     const LinearForm &val,
     const QT &lb) {
+  // Proof by contradiction
   auto res = v.is_compatible(searching_lb ? val <= lb : val >= lb);
   if (!res) {
     return true;
@@ -130,9 +131,10 @@ void bsearch_worker(
           }
         }
         // TODO: send this error to root thread
-        if (!res_found)
-          throw std::runtime_error("Lower bound invalid");
-        if (searching_lb) {
+        if (!res_found) {
+          std::cout << "Bound invalid" << std::endl;
+          throw std::runtime_error("Bound invalid");
+        } if (searching_lb) {
           expect(res > clb);
           res = clb;
         } else {
@@ -161,6 +163,7 @@ void bsearch(
 
   if (config.find_lb) {
     searching_lb = true;
+    res = res_max;
 
     std::future<void> futures[config.nthreads];
     for (int i = 0; i < config.nthreads; i++)
@@ -175,6 +178,7 @@ void bsearch(
 
   if (config.find_ub) {
     searching_lb = false;
+    res = res_min;
 
     std::future<void> futures[config.nthreads];
     for (int i = 0; i < config.nthreads; i++)
@@ -189,11 +193,13 @@ void bsearch(
 }
 
 void run(const Config &cfg) {
+  std::cout << "Reading tree from: " << cfg.tree_file_path << std::endl;
 
   CerealReader reader(cfg.tree_file_path.c_str());
   SofaContext ctx(reader);
   SofaBranchTree tree(ctx, reader);
   reader.close();
+  std::cout << "Reading tree done." << std::endl;
 
   Parser parser(ctx);
   LinearForm val = parser.parse_expr(cfg.linear_form);
