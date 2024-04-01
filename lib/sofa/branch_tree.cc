@@ -62,20 +62,31 @@ std::vector<SofaState> process(
 }
 
 void SofaBranchTree::add_corner(int i, bool extend, int nthread) {
+  expect(1 <= nthread);
+
   int n = ctx.n();
   expect(1 <= i && i < n);
-  std::vector<SofaState> cur_states[nthread];
-  for (int idx = 0; idx < int(valid_states_.size()); idx++)
-    cur_states[idx % nthread].push_back(valid_states_[idx]);
+
+  // split valid states into equal-sized chunks
+  int nstate = int(valid_states_.size());
+  std::vector< std::vector<SofaState> > cur_states;
+  int start_idx = 0;
+  for (int rnk = 0; rnk < nthread; rnk++) {
+    int end_idx = start_idx + (nstate / nthread) + int(rnk < nstate % nthread);
+    cur_states.emplace_back(
+        valid_states_.begin() + start_idx,
+        valid_states_.begin() + end_idx);
+    start_idx = end_idx;
+  }
   valid_states_.clear();
-  // for each state, propagate
+
+  // run the algorithm on each chunk asynchronously
   std::future< std::vector<SofaState> > nxt_states[nthread];
   for (int rnk = 0; rnk < nthread; rnk++)
     nxt_states[rnk] = std::async(process, cur_states[rnk], i, extend, rnk == 0);
-  for (int rnk = 0; rnk < nthread; rnk++) {
-    auto res = nxt_states[rnk].get();
-    for (const auto &vv : res)
-      valid_states_.push_back(vv);
+  for (const auto &res : nxt_states) {
+    auto vec = res.get();
+    valid_states_.insert(valid_states_.end(), vec.begin(), vec.end());
   }
   expect(split_states_.size() + 1 == valid_states_.size() + invalid_states_.size());
 }
