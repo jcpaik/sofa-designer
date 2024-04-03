@@ -1,0 +1,10 @@
+[
+{"branch_order":-1,"cos":"60/61","sin":"11/61"},
+{"branch_order":2,"cos":"140/149","sin":"51/149"},
+{"branch_order":4,"cos":"209/241","sin":"120/241"},
+{"branch_order":0,"cos":"105/137","sin":"88/137"},
+{"branch_order":1,"cos":"88/137","sin":"105/137"},
+{"branch_order":5,"cos":"120/241","sin":"209/241"},
+{"branch_order":3,"cos":"51/149","sin":"140/149"},
+{"branch_order":-1,"cos":"11/61","sin":"60/61"}
+]
