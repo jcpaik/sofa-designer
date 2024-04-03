@@ -1,0 +1,10 @@
+[
+    {"cos": "112/113", "sin": "15/113", "branch_order": -1},
+    {"cos": "24/25", "sin": "7/25", "branch_order": 4},
+    {"cos": "12/13", "sin": "5/13", "branch_order": -1},
+    {"cos": "56/65", "sin": "33/65", "branch_order": 2},
+    {"cos": "4/5", "sin": "3/5", "branch_order": -1},
+    {"cos": "120/169"  , "sin": "119/169"  , "branch_order": 0},
+    {"cos": "33/65"  , "sin": "56/65"  , "branch_order": 1},
+    {"cos": "7/25", "sin": "24/25", "branch_order": 3}
+]
