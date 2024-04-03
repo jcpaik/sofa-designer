@@ -1,0 +1,17 @@
+[
+    {"branch_order": -1, "extend":  true, "cos": "144/145", "sin": "17/145"},
+    {"branch_order":  5, "extend": false, "cos": "99/101", "sin": "20/101"},
+    {"branch_order": -1, "extend":  true, "cos": "391/409", "sin": "120/409"},
+    {"branch_order":  1, "extend":  true, "cos": "12/13", "sin": "5/13"},
+    {"branch_order": -1, "extend":  true, "cos": "15/17", "sin": "8/17"},
+    {"branch_order":  3, "extend": false, "cos": "240/289", "sin": "161/289"},
+    {"branch_order": -1, "extend":  true, "cos": "171/221", "sin": "140/221"},
+    {"branch_order":  0, "extend": false, "cos": "120/169", "sin": "119/169"},
+    {"branch_order": -1, "extend":  true, "cos": "140/221", "sin": "171/221"},
+    {"branch_order":  4, "extend": false, "cos": "161/289", "sin": "240/289"},
+    {"branch_order": -1, "extend":  true, "cos": "8/17", "sin": "15/17"},
+    {"branch_order":  2, "extend":  true, "cos": "5/13", "sin": "12/13"},
+    {"branch_order": -1, "extend":  true, "cos": "120/409", "sin": "391/409"},
+    {"branch_order":  6, "extend": false, "cos": "20/101", "sin": "99/101"},
+    {"branch_order": -1, "extend":  true, "cos": "17/145", "sin": "144/145"}
+]
