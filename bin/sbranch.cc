@@ -19,7 +19,7 @@ namespace po = boost::program_options;
 #include "sofa/cereal.h"
 
 static bool endsWith(const std::string& str, const std::string& suffix) {
-    return str.size() >= suffix.size() && 0 == 
+    return str.size() >= suffix.size() && 0 ==
       str.compare(str.size()-suffix.size(), suffix.size(), suffix);
 }
 
@@ -41,7 +41,7 @@ void process_angles(
     bool show_max_area) {
   if (angles.type() != Json::arrayValue)
     throw std::invalid_argument("JSON not an array");
-  
+
   std::vector< std::pair<int, int> > order_pair;
 
   for (int i = 0; i < angles.size(); i++) {
@@ -61,8 +61,8 @@ void process_angles(
   // Branching
   SofaContext ctx(angles);
   SofaBranchTree t(ctx);
-  for (int i = 0; i < bidx.size(); i++) {
-    t.add_corner(bidx[i], true, nthreads);
+  for (auto i : bidx) {
+    t.add_corner(i, angles[i - 1]["extend"].asBool(), nthreads);
   }
 
   if (show_max_area) {
@@ -79,7 +79,7 @@ void process_angles(
 
   if (out.empty())
     return;
-  
+
   if (!json_output) {
     // use cerealization
     CerealWriter writer(out.c_str());
@@ -98,7 +98,7 @@ void process_angles(
   std::filesystem::create_directory(fp);
 
   // Write the files
-  { 
+  {
     std::ofstream angles_f(fp / std::filesystem::path("angles.json"));
     angles_f << angles;
     angles_f.close();
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     p.add("angles", -1);
 
     // Parse arguments
-    po::variables_map vm;        
+    po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).
               options(desc).positional(p).run(), vm);
     po::notify(vm);
